@@ -24,13 +24,6 @@ const CFG = {
     { sku: 'PRD-QTZ-RTD-00750-101', sabor: 'caju',     descricao: 'Quetzalli Drink – Vodka com Caju e Acerola – Drink Pronto',     volume: '750 ml', teor: '15% vol.', valor_unitario: 75.3 },
     { sku: 'PRD-QTZ-RTD-00750-201', sabor: 'morango',  descricao: 'Quetzalli Drink – Gin com Morango e Graviola – Drink Pronto',    volume: '750 ml', teor: '15% vol.', valor_unitario: 74.9 },
     { sku: 'PRD-QTZ-RTD-00750-301', sabor: 'cambuci',  descricao: 'Quetzalli Drink – Cachaça com Cambuci e Abacaxi – Drink Pronto', volume: '750 ml', teor: '15% vol.', valor_unitario: 79.9 }
-  ],
-  GARANTIAS: [
-    'Nota promissória com aval dos sócios',
-    'Fiança / aval pessoal dos sócios',
-    'Pré-autorização em cartão de crédito / caução',
-    'Seguro-crédito / seguro-garantia',
-    'Apólice de seguro do evento incluindo as mercadorias'
   ]
 };
 
@@ -56,7 +49,6 @@ function doGet() {
 function getConfig() {
   return {
     catalogo: CFG.CATALOGO,
-    garantias: CFG.GARANTIAS,
     locaisRetirada: CFG.LOCAIS_RETIRADA,
     prazoDias: CFG.PRAZO_DIAS,
     maxPorSku: CFG.MAX_UNIDADES_POR_SKU
@@ -84,8 +76,6 @@ function submitSolicitacao(p) {
       tipo_pessoa: 'PJ',
       data_solicitacao: Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd'),
       contratante: contratante_(p),
-      socios_avalistas: p.socios.map(s => ({ nome: txt_(s.nome), cpf: txt_(s.cpf), email: txt_(s.email), telefone: txt_(s.telefone) })),
-      referencias_comerciais: txt_(p.referencias_comerciais),
       evento: {
         nome: txt_(p.evento.nome), data: br_(p.evento.data), horario: txt_(p.evento.horario),
         local: txt_(p.evento.local), endereco: txt_(p.evento.endereco),
@@ -99,7 +89,6 @@ function submitSolicitacao(p) {
       },
       produtos: produtos,
       totais: { valor_total: total, vencimento: br_(vencimento), prazo_dias: CFG.PRAZO_DIAS },
-      garantias: (p.garantias || []).filter(g => CFG.GARANTIAS.indexOf(g) >= 0),
       declaracoes: {
         maiores_18: true, advertencias: true, prazo_15_dias: true, cobranca_integral: true,
         devolucao_por_conta: true, risco_perda: true, consulta_credito: true, lgpd: true, veracidade: true,
@@ -169,9 +158,6 @@ function validar_(p) {
     if (q < 0 || q > CFG.MAX_UNIDADES_POR_SKU || q !== Math.floor(q)) e.push('Quantidade inválida para ' + x.sku + '.');
   });
 
-  if (!p.socios || !p.socios.length) e.push('Informe ao menos um sócio/avalista.');
-  (p.socios || []).forEach((s, i) => { if (!txt_(s.nome) || !cpfOk_(s.cpf)) e.push('Sócio/avalista ' + (i + 1) + ': nome ou CPF inválido.'); });
-  if (!p.garantias || !p.garantias.length) e.push('Selecione ao menos uma garantia.');
 
   ['maiores_18', 'advertencias', 'prazo_15_dias', 'cobranca_integral', 'devolucao_por_conta',
    'risco_perda', 'consulta_credito', 'lgpd', 'veracidade'].forEach(k => { if (!(p.declaracoes && p.declaracoes[k])) e.push('É necessário aceitar todas as declarações.'); });
@@ -270,7 +256,6 @@ function avisarAdmin_(pl) {
     'Solicitante: ' + nome + '\nEvento: ' + pl.evento.nome + ' (' + pl.evento.data + ')\n' +
     'Valor (preço de consignação): R$ ' + pl.totais.valor_total.toFixed(2).replace('.', ',') + '\n' +
     'Retirada: ' + pl.retirada.data + ' ' + pl.retirada.horario + '\nVencimento: ' + pl.totais.vencimento + '\n' +
-    'Garantias: ' + (pl.garantias.join('; ') || '—') + '\n' +
     (pl.analise_manual ? '\n⚠ Acima do limite automático: análise manual obrigatória.\n' : '') +
     '\nPlanilha: ' + SpreadsheetApp.getActiveSpreadsheet().getUrl());
 }
@@ -337,7 +322,7 @@ function gerarMinuta() {
     'Olá!\n\nSua solicitação ' + pl.referencia + ' foi aprovada. Segue o Termo de Consignação para assinatura.\n\n' +
     'Pontos principais: prazo de ' + CFG.PRAZO_DIAS + ' dias corridos; na falta de devolução o valor integral é cobrado; ' +
     'o custo da devolução é por conta da consignatária.\n\nDevolva o termo assinado respondendo este e-mail. ' +
-    'A retirada será liberada após o recebimento do termo assinado e das garantias.\n\nQuetzalli',
+    'A retirada será liberada após o recebimento do termo assinado.\n\nQuetzalli',
     { attachments: [pdf.getAs('application/pdf')], name: 'Quetzalli' });
   ui.alert('Minuta gerada e enviada para ' + pl.contratante.email + '.');
 }
@@ -357,8 +342,6 @@ function placeholders_(pl, limite) {
     responsavel_retirada: pl.retirada.responsavel,
     produtos: pl.produtos.map(p => p.quantidade + ' × ' + p.descricao + ' (' + p.volume + '; ' + p.teor + '; SKU ' + p.sku + ') a ' + brl(p.valor_unitario) + ' = ' + brl(p.subtotal)).join('\n'),
     valor_total: brl(pl.totais.valor_total), limite_aprovado: brl(limite), vencimento: pl.totais.vencimento,
-    garantias: pl.garantias.join('; '),
-    socios_avalistas: pl.socios_avalistas.map(s => s.nome + ' (CPF ' + s.cpf + ')').join('; '),
     data_extenso: pl.data_extenso
   };
 }

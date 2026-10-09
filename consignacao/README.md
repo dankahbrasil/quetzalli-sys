@@ -28,14 +28,13 @@ registrar retirada, registrar devolução/acerto.
 - Preços sempre do catálogo do servidor (`CFG.CATALOGO`); o navegador só envia SKU e quantidade.
 - Vencimento = data de retirada + 15 dias. Retirada não pode ser no passado nem depois do evento.
 - Acima de `MAX_VALOR_SOLICITACAO` o aviso ao admin pede análise manual.
-- CNPJ e CPFs validados; ao menos um sócio/avalista e uma garantia; todas as declarações são obrigatórias.
+- CNPJ e CPF do representante validados; todas as declarações são obrigatórias.
 - `verificarVencimentos` (diário, 08h): avisa 2 dias antes e no dia, e marca `vencida` no dia seguinte (cobrar o valor integral, Cláusula 4.4).
 
 ## Placeholders do Termo (Google Doc)
 `{{referencia}} {{nome}} {{documento}} {{qualificacao_representante}} {{endereco}} {{email}} {{telefone}}
 {{evento_nome}} {{evento_data}} {{evento_horario}} {{evento_local}} {{retirada}} {{retirada_local}}
-{{responsavel_retirada}} {{produtos}} {{valor_total}} {{limite_aprovado}} {{vencimento}} {{garantias}}
-{{socios_avalistas}} {{data_extenso}}`
+{{responsavel_retirada}} {{produtos}} {{valor_total}} {{limite_aprovado}} {{vencimento}} {{data_extenso}}`
 
 ## Fiscal e cobrança (manual)
 - Nota de **remessa para demonstração** na saída (colunas `NF remessa demonstração nº` / `NF retorno nº`), nota de **venda** após a apuração (`NF venda nº`).

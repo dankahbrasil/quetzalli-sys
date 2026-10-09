@@ -25,7 +25,6 @@
   .total { display:flex; justify-content:space-between; font-weight:600; padding-top:12px; border-top:1px solid var(--line); margin-top:8px; }
   .aviso { background:color-mix(in srgb, var(--accent) 10%, var(--card)); border:1px solid var(--accent); border-radius:8px; padding:12px; font-size:.9rem; margin:8px 0; }
   .chk { display:flex; gap:10px; align-items:flex-start; margin:10px 0; color:var(--ink); font-size:.9rem; } .chk input { width:auto; margin-top:4px; }
-  .socio { border:1px dashed var(--line); border-radius:8px; padding:8px 12px 12px; margin:8px 0; }
   .link { background:none; border:0; color:var(--accent); cursor:pointer; padding:4px 0; font:inherit; }
   .btn { width:100%; padding:14px; font:inherit; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:10px; cursor:pointer; }
   .btn:disabled { opacity:.6; cursor:wait; }
@@ -38,7 +37,7 @@
 <main>
 <div id="form">
   <h1>Solicitação de Consignação</h1>
-  <p class="sub">Preencha os dados da sua organização e do evento. A solicitação passa por análise de crédito e só é liberada após a assinatura do Termo e a entrega das garantias.</p>
+  <p class="sub">Preencha os dados da sua organização e do evento. A solicitação passa por análise de crédito e só é liberada após a assinatura do Termo.</p>
 
   <form id="f" novalidate>
     <input class="hp" type="text" name="website" id="website" tabindex="-1" autocomplete="off">
@@ -77,14 +76,7 @@
       <div class="aviso" id="avisoPrazo">Prazo de <b>15 dias corridos</b> a partir da retirada. O boleto do valor total vence em <b id="venc">—</b>. Se tudo for devolvido a tempo, o boleto é cancelado; o que não voltar é cobrado pelo valor integral. <b>O frete da devolução é por sua conta.</b></div>
     </fieldset>
 
-    <fieldset><legend>5. Sócios / avalistas e garantias</legend>
-      <div id="socios"></div>
-      <button type="button" class="link" id="addSocio">+ adicionar sócio/avalista</button>
-      <label>Duas referências comerciais (fornecedores, patrocinadores, eventos anteriores)</label><textarea id="refs" rows="3"></textarea>
-      <label>Garantias oferecidas</label><div id="garantias"></div>
-    </fieldset>
-
-    <fieldset><legend>6. Declarações</legend>
+    <fieldset><legend>5. Declarações</legend>
       <div class="chk"><input type="checkbox" id="d_maiores"><span>Sou maior de 18 anos e o representante legal tem poderes para esta solicitação.</span></div>
       <div class="chk"><input type="checkbox" id="d_adv"><span>Estou ciente de que se trata de bebida alcoólica: não será vendida nem oferecida a menores de 18 anos, e o consumo exige moderação.</span></div>
       <div class="chk"><input type="checkbox" id="d_prazo"><span>Li e aceito o prazo de 15 dias corridos para pagar ou devolver.</span></div>
@@ -105,7 +97,7 @@
   <h2>Solicitação recebida</h2>
   <p>Seu número de referência:</p><p class="ref" id="refNum"></p>
   <p>Valor: <b id="okValor"></b> · Vencimento previsto: <b id="okVenc"></b></p>
-  <p>Vamos analisar o crédito e responder por e-mail com o Termo de Consignação para assinatura. A retirada só é liberada após a assinatura e as garantias.</p>
+  <p>Vamos analisar o crédito e responder por e-mail com o Termo de Consignação para assinatura. A retirada só é liberada após a assinatura do Termo.</p>
 </div>
 </main>
 
@@ -135,14 +127,6 @@ $('cep').addEventListener('blur', () => {
   }).catch(() => {});
 });
 
-function addSocio() {
-  const d = document.createElement('div'); d.className = 'socio';
-  d.innerHTML = '<label>Nome completo</label><input class="s-nome"><div class="row"><div><label>CPF</label><input class="s-cpf" inputmode="numeric"></div><div><label>Telefone</label><input class="s-tel" inputmode="tel"></div></div><label>E-mail</label><input class="s-email" type="email">';
-  $('socios').appendChild(d);
-  d.querySelector('.s-cpf').addEventListener('input', e => e.target.value = masks.cpf(e.target.value));
-  d.querySelector('.s-tel').addEventListener('input', e => e.target.value = masks.tel(e.target.value));
-}
-$('addSocio').onclick = addSocio;
 
 function recalcula() {
   let total = 0;
@@ -160,14 +144,12 @@ google.script.run.withSuccessHandler(cfg => {
   $('produtos').innerHTML = cfg.catalogo.map((p, i) =>
     '<div class="prod"><div><b>' + p.descricao + '</b><small>' + p.volume + ' · ' + p.teor + ' · ' + brl(p.valor_unitario) + ' /un.</small></div>' +
     '<div class="qty"><button type="button" data-i="' + i + '" data-d="-1">−</button><input id="q' + i + '" type="number" min="0" max="' + cfg.maxPorSku + '" value="0" inputmode="numeric"><button type="button" data-i="' + i + '" data-d="1">+</button></div></div>').join('');
-  $('garantias').innerHTML = cfg.garantias.map((g, i) => '<div class="chk"><input type="checkbox" class="gar" value="' + g + '" id="g' + i + '"' + (i === 0 ? ' checked' : '') + '><span>' + g + '</span></div>').join('');
   document.querySelectorAll('.qty button').forEach(b => b.onclick = () => {
     const el = $('q' + b.dataset.i); el.value = Math.max(0, Math.min(cfg.maxPorSku, (Number(el.value) || 0) + Number(b.dataset.d))); recalcula();
   });
   document.querySelectorAll('.qty input').forEach(i => i.addEventListener('input', recalcula));
   $('ret_data').addEventListener('change', recalcula);
   const hoje = new Date().toISOString().slice(0, 10); $('ret_data').min = hoje; $('ev_data').min = hoje;
-  addSocio();
 }).getConfig();
 
 $('f').addEventListener('submit', ev => {
@@ -183,9 +165,6 @@ $('f').addEventListener('submit', ev => {
               publico: $('ev_publico').value, controle_acesso: $('ev_acesso').value, contratante: $('ev_contratante').value },
     retirada: { data: $('ret_data').value, horario: $('ret_horario').value, local: $('ret_local').value, responsavel: $('ret_resp').value, observacoes: $('ret_obs').value },
     produtos: CONFIG.catalogo.map((c, i) => ({ sku: c.sku, quantidade: Number($('q' + i).value) || 0 })),
-    socios: [...document.querySelectorAll('.socio')].map(s => ({ nome: s.querySelector('.s-nome').value, cpf: s.querySelector('.s-cpf').value, telefone: s.querySelector('.s-tel').value, email: s.querySelector('.s-email').value })).filter(s => s.nome || s.cpf),
-    referencias_comerciais: $('refs').value,
-    garantias: [...document.querySelectorAll('.gar:checked')].map(g => g.value),
     declaracoes: { maiores_18: $('d_maiores').checked, advertencias: $('d_adv').checked, prazo_15_dias: $('d_prazo').checked, cobranca_integral: $('d_cobr').checked,
                    devolucao_por_conta: $('d_frete').checked, risco_perda: $('d_risco').checked, consulta_credito: $('d_credito').checked, lgpd: $('d_lgpd').checked, veracidade: $('d_ver').checked }
   };
