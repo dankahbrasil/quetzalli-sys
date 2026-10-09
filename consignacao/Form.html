@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root { --bg:#faf7f2; --card:#fff; --ink:#1f1a17; --muted:#6b625b; --line:#e3dbd0; --accent:#b4432a; --ok:#2f6b3f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16120f; --card:#211c18; --ink:#f3ede6; --muted:#a79d93; --line:#3a322b; --accent:#e0775c; --ok:#6fbf86; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:24px 16px 80px; }
+  h1 { font-size:1.5rem; margin:0 0 4px; } .sub { color:var(--muted); margin:0 0 20px; }
+  fieldset { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin:0 0 16px; }
+  legend { font-weight:600; padding:0 8px; }
+  label { display:block; font-size:.875rem; color:var(--muted); margin:12px 0 4px; }
+  input, select, textarea { width:100%; padding:10px 12px; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:8px; }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; } @media (max-width:560px){ .row { grid-template-columns:1fr; } }
+  .seg { display:flex; gap:8px; } .seg label { flex:1; margin:0; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:10px; text-align:center; cursor:pointer; }
+  .seg input { display:none; } .seg input:checked + span { color:var(--accent); font-weight:600; }
+  .prod { display:grid; grid-template-columns:1fr auto; gap:8px 12px; align-items:center; padding:10px 0; border-top:1px solid var(--line); }
+  .prod:first-of-type { border-top:0; } .prod small { color:var(--muted); display:block; }
+  .qty { display:flex; align-items:center; gap:6px; } .qty button { width:36px; height:36px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font-size:1.1rem; cursor:pointer; }
+  .qty input { width:56px; text-align:center; }
+  .total { display:flex; justify-content:space-between; font-weight:600; padding-top:12px; border-top:1px solid var(--line); margin-top:8px; }
+  .aviso { background:color-mix(in srgb, var(--accent) 10%, var(--card)); border:1px solid var(--accent); border-radius:8px; padding:12px; font-size:.9rem; margin:8px 0; }
+  .chk { display:flex; gap:10px; align-items:flex-start; margin:10px 0; color:var(--ink); font-size:.9rem; } .chk input { width:auto; margin-top:4px; }
+  .socio { border:1px dashed var(--line); border-radius:8px; padding:8px 12px 12px; margin:8px 0; }
+  .link { background:none; border:0; color:var(--accent); cursor:pointer; padding:4px 0; font:inherit; }
+  .btn { width:100%; padding:14px; font:inherit; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:10px; cursor:pointer; }
+  .btn:disabled { opacity:.6; cursor:wait; }
+  .err { color:#c0392b; font-size:.9rem; margin:8px 0; white-space:pre-line; }
+  .hide { display:none; } .hp { position:absolute; left:-9999px; }
+  .ok { text-align:center; padding:32px 16px; } .ok h2 { color:var(--ok); } .ref { font:600 1.4rem ui-monospace,monospace; }
+</style>
+</head>
+<body>
+<main>
+<div id="form">
+  <h1>Solicitação de Consignação</h1>
+  <p class="sub">Preencha os dados da sua organização e do evento. A solicitação passa por análise de crédito e só é liberada após a assinatura do Termo e a entrega das garantias.</p>
+
+  <form id="f" novalidate>
+    <input class="hp" type="text" name="website" id="website" tabindex="-1" autocomplete="off">
+
+    <fieldset><legend>1. Quem solicita</legend>
+      <div class="seg">
+        <label><input type="radio" name="tipo" value="PJ" checked><span>Pessoa jurídica (atlética, DA, produtora)</span></label>
+        <label><input type="radio" name="tipo" value="PF"><span>Pessoa física</span></label>
+      </div>
+      <div id="pj">
+        <label>Razão social</label><input id="razao_social">
+        <div class="row"><div><label>CNPJ</label><input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00"></div>
+        <div><label>Perfil no Instagram da organização</label><input id="perfil_pj" placeholder="@perfil"></div></div>
+        <label>Representante legal (nome completo)</label><input id="rep_nome">
+        <div class="row"><div><label>Cargo</label><input id="rep_cargo" placeholder="Presidente"></div><div><label>CPF do representante</label><input id="rep_cpf" inputmode="numeric"></div></div>
+        <div class="row"><div><label>RG</label><input id="rep_rg"></div><div><label>Órgão emissor</label><input id="rep_org" placeholder="SSP/SP"></div></div>
+      </div>
+      <div id="pf" class="hide">
+        <label>Nome completo</label><input id="nome">
+        <div class="row"><div><label>CPF</label><input id="cpf" inputmode="numeric"></div><div><label>Perfil no Instagram</label><input id="perfil_pf" placeholder="@perfil"></div></div>
+        <div class="row"><div><label>RG</label><input id="rg"></div><div><label>Órgão emissor</label><input id="org" placeholder="SSP/SP"></div></div>
+      </div>
+      <div class="row"><div><label>E-mail</label><input id="email" type="email" inputmode="email"></div><div><label>Telefone (WhatsApp)</label><input id="telefone" inputmode="tel" placeholder="(11) 90000-0000"></div></div>
+      <div class="row"><div><label>CEP</label><input id="cep" inputmode="numeric" placeholder="00000-000"></div><div><label>Endereço completo</label><input id="endereco"></div></div>
+    </fieldset>
+
+    <fieldset><legend>2. Evento</legend>
+      <label>Nome do evento</label><input id="ev_nome">
+      <div class="row"><div><label>Data do evento</label><input id="ev_data" type="date"></div><div><label>Horário</label><input id="ev_horario" placeholder="das 23h00 às 06h00"></div></div>
+      <div class="row"><div><label>Local</label><input id="ev_local"></div><div><label>Endereço do local</label><input id="ev_endereco"></div></div>
+      <div class="row"><div><label>Público estimado</label><input id="ev_publico" type="number" min="1" inputmode="numeric"></div><div><label>Controle de acesso</label><input id="ev_acesso" placeholder="Conferência de RG na porta"></div></div>
+      <label>Quem contrata/organiza o evento (se diferente)</label><input id="ev_contratante">
+    </fieldset>
+
+    <fieldset><legend>3. Retirada das mercadorias</legend>
+      <div class="row"><div><label>Data</label><input id="ret_data" type="date"></div><div><label>Horário</label><input id="ret_horario" type="time"></div></div>
+      <label>Local de retirada</label><select id="ret_local"></select>
+      <label>Quem vai retirar (nome completo)</label><input id="ret_resp">
+      <label>Observações</label><input id="ret_obs">
+    </fieldset>
+
+    <fieldset><legend>4. Produtos</legend>
+      <div id="produtos"></div>
+      <div class="total"><span>Valor total (preço de consignação)</span><span id="total">R$ 0,00</span></div>
+      <div class="aviso" id="avisoPrazo">Prazo de <b>15 dias corridos</b> a partir da retirada. O boleto do valor total vence em <b id="venc">—</b>. Se tudo for devolvido a tempo, o boleto é cancelado; o que não voltar é cobrado pelo valor integral. <b>O frete da devolução é por sua conta.</b></div>
+    </fieldset>
+
+    <fieldset><legend>5. Sócios / avalistas e garantias</legend>
+      <div id="socios"></div>
+      <button type="button" class="link" id="addSocio">+ adicionar sócio/avalista</button>
+      <label>Duas referências comerciais (fornecedores, patrocinadores, eventos anteriores)</label><textarea id="refs" rows="3"></textarea>
+      <label>Garantias oferecidas</label><div id="garantias"></div>
+    </fieldset>
+
+    <fieldset><legend>6. Declarações</legend>
+      <div class="chk"><input type="checkbox" id="d_maiores"><span>Sou maior de 18 anos e o representante legal tem poderes para esta solicitação.</span></div>
+      <div class="chk"><input type="checkbox" id="d_adv"><span>Estou ciente de que se trata de bebida alcoólica: não será vendida nem oferecida a menores de 18 anos, e o consumo exige moderação.</span></div>
+      <div class="chk"><input type="checkbox" id="d_prazo"><span>Li e aceito o prazo de 15 dias corridos para pagar ou devolver.</span></div>
+      <div class="chk"><input type="checkbox" id="d_cobr"><span>Entendo que, sem devolução até o 15º dia, o valor integral das mercadorias não devolvidas será cobrado.</span></div>
+      <div class="chk"><input type="checkbox" id="d_frete"><span>O custo (frete, embalagem e seguro) da devolução é por minha conta.</span></div>
+      <div class="chk"><input type="checkbox" id="d_risco"><span>Respondo por perda, furto, avaria e extravio, ainda que por caso fortuito ou força maior.</span></div>
+      <div class="chk"><input type="checkbox" id="d_credito"><span>Autorizo a consulta de crédito da organização e dos sócios/avalistas.</span></div>
+      <div class="chk"><input type="checkbox" id="d_lgpd"><span>Autorizo o tratamento dos meus dados para análise, contrato e cobrança (LGPD).</span></div>
+      <div class="chk"><input type="checkbox" id="d_ver"><span>Declaro que as informações são verdadeiras.</span></div>
+    </fieldset>
+
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn" id="enviar" type="submit">Enviar solicitação</button>
+  </form>
+</div>
+
+<div id="done" class="ok hide">
+  <h2>Solicitação recebida</h2>
+  <p>Seu número de referência:</p><p class="ref" id="refNum"></p>
+  <p>Valor: <b id="okValor"></b> · Vencimento previsto: <b id="okVenc"></b></p>
+  <p>Vamos analisar o crédito e responder por e-mail com o Termo de Consignação para assinatura. A retirada só é liberada após a assinatura e as garantias.</p>
+</div>
+</main>
+
+<script>
+let CONFIG = null;
+const $ = id => document.getElementById(id);
+const brl = n => 'R$ ' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const digits = s => (s || '').replace(/\D/g, '');
+
+const masks = {
+  cnpj: v => digits(v).slice(0,14).replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2'),
+  cpf: v => digits(v).slice(0,11).replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'),
+  cep: v => digits(v).slice(0,8).replace(/(\d{5})(\d)/,'$1-$2'),
+  tel: v => { const d = digits(v).slice(0,11); return d.length > 10 ? d.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3') : d.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3').replace(/-$/,''); }
+};
+function bind(id, fn) { $(id).addEventListener('input', e => { e.target.value = fn(e.target.value); }); }
+['cnpj'].forEach(i => bind(i, masks.cnpj));
+['cpf', 'rep_cpf'].forEach(i => bind(i, masks.cpf));
+bind('cep', masks.cep); bind('telefone', masks.tel);
+
+document.querySelectorAll('input[name=tipo]').forEach(r => r.addEventListener('change', () => {
+  const pj = document.querySelector('input[name=tipo]:checked').value === 'PJ';
+  $('pj').classList.toggle('hide', !pj); $('pf').classList.toggle('hide', pj);
+}));
+
+$('cep').addEventListener('blur', () => {
+  const c = digits($('cep').value);
+  if (c.length !== 8) return;
+  fetch('https://viacep.com.br/ws/' + c + '/json/').then(r => r.json()).then(d => {
+    if (!d.erro && !$('endereco').value) $('endereco').value = [d.logradouro, d.bairro, d.localidade + '/' + d.uf].filter(Boolean).join(', ');
+  }).catch(() => {});
+});
+
+function addSocio() {
+  const d = document.createElement('div'); d.className = 'socio';
+  d.innerHTML = '<label>Nome completo</label><input class="s-nome"><div class="row"><div><label>CPF</label><input class="s-cpf" inputmode="numeric"></div><div><label>Telefone</label><input class="s-tel" inputmode="tel"></div></div><label>E-mail</label><input class="s-email" type="email">';
+  $('socios').appendChild(d);
+  d.querySelector('.s-cpf').addEventListener('input', e => e.target.value = masks.cpf(e.target.value));
+  d.querySelector('.s-tel').addEventListener('input', e => e.target.value = masks.tel(e.target.value));
+}
+$('addSocio').onclick = addSocio;
+
+function recalcula() {
+  let total = 0;
+  CONFIG.catalogo.forEach((p, i) => { total += (Number($('q' + i).value) || 0) * p.valor_unitario; });
+  $('total').textContent = brl(total);
+  const d = $('ret_data').value;
+  if (d) { const [y, m, dd] = d.split('-').map(Number); const v = new Date(y, m - 1, dd + CONFIG.prazoDias); $('venc').textContent = v.toLocaleDateString('pt-BR'); }
+  else $('venc').textContent = '—';
+  return total;
+}
+
+google.script.run.withSuccessHandler(cfg => {
+  CONFIG = cfg;
+  $('ret_local').innerHTML = '<option value="">Selecione…</option>' + cfg.locaisRetirada.map(l => '<option>' + l + '</option>').join('');
+  $('produtos').innerHTML = cfg.catalogo.map((p, i) =>
+    '<div class="prod"><div><b>' + p.descricao + '</b><small>' + p.volume + ' · ' + p.teor + ' · ' + brl(p.valor_unitario) + ' /un.</small></div>' +
+    '<div class="qty"><button type="button" data-i="' + i + '" data-d="-1">−</button><input id="q' + i + '" type="number" min="0" max="' + cfg.maxPorSku + '" value="0" inputmode="numeric"><button type="button" data-i="' + i + '" data-d="1">+</button></div></div>').join('');
+  $('garantias').innerHTML = cfg.garantias.map((g, i) => '<div class="chk"><input type="checkbox" class="gar" value="' + g + '" id="g' + i + '"' + (i === 0 ? ' checked' : '') + '><span>' + g + '</span></div>').join('');
+  document.querySelectorAll('.qty button').forEach(b => b.onclick = () => {
+    const el = $('q' + b.dataset.i); el.value = Math.max(0, Math.min(cfg.maxPorSku, (Number(el.value) || 0) + Number(b.dataset.d))); recalcula();
+  });
+  document.querySelectorAll('.qty input').forEach(i => i.addEventListener('input', recalcula));
+  $('ret_data').addEventListener('change', recalcula);
+  const hoje = new Date().toISOString().slice(0, 10); $('ret_data').min = hoje; $('ev_data').min = hoje;
+  addSocio();
+}).getConfig();
+
+$('f').addEventListener('submit', ev => {
+  ev.preventDefault(); $('err').textContent = '';
+  const pj = document.querySelector('input[name=tipo]:checked').value === 'PJ';
+  const p = {
+    website: $('website').value, tipo_pessoa: pj ? 'PJ' : 'PF',
+    contratante: pj
+      ? { razao_social: $('razao_social').value, cnpj: $('cnpj').value, email: $('email').value, telefone: $('telefone').value, cep: $('cep').value, endereco: $('endereco').value,
+          representante: { nome: $('rep_nome').value, cargo: $('rep_cargo').value, cpf: $('rep_cpf').value, rg: $('rep_rg').value, orgao_emissor: $('rep_org').value,
+                           endereco: $('endereco').value, cep: $('cep').value, email: $('email').value, telefone: $('telefone').value } }
+      : { nome: $('nome').value, cpf: $('cpf').value, rg: $('rg').value, orgao_emissor: $('org').value, email: $('email').value, telefone: $('telefone').value, cep: $('cep').value, endereco: $('endereco').value },
+    perfil: pj ? $('perfil_pj').value : $('perfil_pf').value,
+    evento: { nome: $('ev_nome').value, data: $('ev_data').value, horario: $('ev_horario').value, local: $('ev_local').value, endereco: $('ev_endereco').value,
+              publico: $('ev_publico').value, controle_acesso: $('ev_acesso').value, contratante: $('ev_contratante').value },
+    retirada: { data: $('ret_data').value, horario: $('ret_horario').value, local: $('ret_local').value, responsavel: $('ret_resp').value, observacoes: $('ret_obs').value },
+    produtos: CONFIG.catalogo.map((c, i) => ({ sku: c.sku, quantidade: Number($('q' + i).value) || 0 })),
+    socios: [...document.querySelectorAll('.socio')].map(s => ({ nome: s.querySelector('.s-nome').value, cpf: s.querySelector('.s-cpf').value, telefone: s.querySelector('.s-tel').value, email: s.querySelector('.s-email').value })).filter(s => s.nome || s.cpf),
+    referencias_comerciais: $('refs').value,
+    garantias: [...document.querySelectorAll('.gar:checked')].map(g => g.value),
+    declaracoes: { maiores_18: $('d_maiores').checked, advertencias: $('d_adv').checked, prazo_15_dias: $('d_prazo').checked, cobranca_integral: $('d_cobr').checked,
+                   devolucao_por_conta: $('d_frete').checked, risco_perda: $('d_risco').checked, consulta_credito: $('d_credito').checked, lgpd: $('d_lgpd').checked, veracidade: $('d_ver').checked }
+  };
+  $('enviar').disabled = true; $('enviar').textContent = 'Enviando…';
+  google.script.run
+    .withSuccessHandler(r => {
+      $('form').classList.add('hide'); $('done').classList.remove('hide');
+      $('refNum').textContent = r.referencia; $('okValor').textContent = brl(r.valor_total); $('okVenc').textContent = r.vencimento;
+      window.scrollTo(0, 0);
+    })
+    .withFailureHandler(e => {
+      $('err').textContent = (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, '');
+      $('enviar').disabled = false; $('enviar').textContent = 'Enviar solicitação';
+    })
+    .submitSolicitacao(p);
+});
+</script>
+</body>
+</html>
