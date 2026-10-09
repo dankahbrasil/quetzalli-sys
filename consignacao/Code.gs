@@ -34,7 +34,7 @@ const CFG = {
   ]
 };
 
-const COLUNAS = ['Referência', 'Recebido em', 'Status', 'Tipo', 'Nome', 'Documento', 'E-mail', 'Telefone',
+const COLUNAS = ['Referência', 'Recebido em', 'Status', 'Nome', 'Documento', 'E-mail', 'Telefone',
   'Perfil', 'Evento', 'Data evento', 'Retirada', 'Valor total (R$)', 'Vencimento (retirada + 15d)',
   'PDF', 'Payload', 'PDF assinado', 'Limite aprovado (R$)', 'Boleto nº',
   'NF remessa demonstração nº', 'NF retorno nº', 'NF venda nº', 'Observações internas'];
@@ -78,13 +78,12 @@ function submitSolicitacao(p) {
     const produtos = montarProdutos_(p.produtos);
     const total = produtos.reduce((s, x) => s + x.subtotal, 0);
     const vencimento = somarDias_(p.retirada.data, CFG.PRAZO_DIAS);
-    const pj = p.tipo_pessoa === 'PJ';
 
     const payload = {
       referencia: ref,
-      tipo_pessoa: p.tipo_pessoa,
+      tipo_pessoa: 'PJ',
       data_solicitacao: Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd'),
-      contratante: contratante_(p, pj),
+      contratante: contratante_(p),
       socios_avalistas: p.socios.map(s => ({ nome: txt_(s.nome), cpf: txt_(s.cpf), email: txt_(s.email), telefone: txt_(s.telefone) })),
       referencias_comerciais: txt_(p.referencias_comerciais),
       evento: {
@@ -114,9 +113,8 @@ function submitSolicitacao(p) {
     linha[COL['Referência'] - 1] = ref;
     linha[COL['Recebido em'] - 1] = Utilities.formatDate(agora, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm:ss');
     linha[COL['Status'] - 1] = 'solicitada';
-    linha[COL['Tipo'] - 1] = p.tipo_pessoa;
-    linha[COL['Nome'] - 1] = payload.contratante.razao_social || payload.contratante.nome;
-    linha[COL['Documento'] - 1] = payload.contratante.cnpj || payload.contratante.cpf;
+    linha[COL['Nome'] - 1] = payload.contratante.razao_social;
+    linha[COL['Documento'] - 1] = payload.contratante.cnpj;
     linha[COL['E-mail'] - 1] = payload.contratante.email;
     linha[COL['Telefone'] - 1] = payload.contratante.telefone;
     linha[COL['Perfil'] - 1] = payload.divulgacao.perfil;
@@ -142,19 +140,12 @@ function submitSolicitacao(p) {
 
 function validar_(p) {
   const e = [];
-  const pj = p.tipo_pessoa === 'PJ';
-  if (['PF', 'PJ'].indexOf(p.tipo_pessoa) < 0) e.push('Informe se é pessoa física ou jurídica.');
   const c = p.contratante || {};
-  if (pj) {
-    if (!txt_(c.razao_social)) e.push('Informe a razão social.');
-    if (!cnpjOk_(c.cnpj)) e.push('CNPJ inválido.');
-    const r = c.representante || {};
-    if (!txt_(r.nome) || !txt_(r.cargo)) e.push('Informe nome e cargo do representante legal.');
-    if (!cpfOk_(r.cpf)) e.push('CPF do representante inválido.');
-  } else {
-    if (!txt_(c.nome)) e.push('Informe o nome completo.');
-    if (!cpfOk_(c.cpf)) e.push('CPF inválido.');
-  }
+  if (!txt_(c.razao_social)) e.push('Informe a razão social.');
+  if (!cnpjOk_(c.cnpj)) e.push('CNPJ inválido.');
+  const r0 = c.representante || {};
+  if (!txt_(r0.nome) || !txt_(r0.cargo)) e.push('Informe nome e cargo do representante legal.');
+  if (!cpfOk_(r0.cpf)) e.push('CPF do representante inválido.');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(txt_(c.email))) e.push('E-mail inválido.');
   if (txt_(c.telefone).replace(/\D/g, '').length < 10) e.push('Telefone inválido.');
   if (!txt_(c.endereco) || txt_(c.cep).replace(/\D/g, '').length !== 8) e.push('Informe endereço e CEP.');
@@ -233,16 +224,14 @@ function dataExtenso_(dt) {
   return d + ' de ' + meses[m - 1] + ' de ' + Utilities.formatDate(dt, 'America/Sao_Paulo', 'yyyy');
 }
 
-function contratante_(p, pj) {
-  const c = p.contratante;
-  const base = { endereco: txt_(c.endereco), cep: txt_(c.cep), email: txt_(c.email).toLowerCase(), telefone: txt_(c.telefone) };
-  if (!pj) return Object.assign({ nome: txt_(c.nome).toUpperCase(), cpf: txt_(c.cpf), rg: txt_(c.rg), orgao_emissor: txt_(c.orgao_emissor) }, base);
-  const r = c.representante;
-  return Object.assign({
+function contratante_(p) {
+  const c = p.contratante, r = c.representante;
+  return {
     razao_social: txt_(c.razao_social).toUpperCase(), cnpj: txt_(c.cnpj),
+    endereco: txt_(c.endereco), cep: txt_(c.cep), email: txt_(c.email).toLowerCase(), telefone: txt_(c.telefone),
     representante: { nome: txt_(r.nome).toUpperCase(), cargo: txt_(r.cargo), cpf: txt_(r.cpf), rg: txt_(r.rg), orgao_emissor: txt_(r.orgao_emissor),
       endereco: txt_(r.endereco), cep: txt_(r.cep), email: txt_(r.email), telefone: txt_(r.telefone) }
-  }, base);
+  };
 }
 
 /** Preços sempre do catálogo do servidor. */
@@ -354,14 +343,13 @@ function gerarMinuta() {
 }
 
 function placeholders_(pl, limite) {
-  const c = pl.contratante, r = c.representante || {};
-  const pj = pl.tipo_pessoa === 'PJ';
+  const c = pl.contratante, r = c.representante;
   const brl = n => 'R$ ' + Number(n).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   return {
     referencia: pl.referencia,
-    nome: pj ? c.razao_social : c.nome,
-    documento: pj ? c.cnpj : c.cpf,
-    qualificacao_representante: pj ? r.nome + ', ' + r.cargo + ', RG ' + r.rg + ' ' + r.orgao_emissor + ', CPF ' + r.cpf : 'RG ' + c.rg + ' ' + c.orgao_emissor,
+    nome: c.razao_social,
+    documento: c.cnpj,
+    qualificacao_representante: r.nome + ', ' + r.cargo + ', RG ' + r.rg + ' ' + r.orgao_emissor + ', CPF ' + r.cpf,
     endereco: c.endereco + ', CEP ' + c.cep, email: c.email, telefone: c.telefone,
     evento_nome: pl.evento.nome, evento_data: pl.evento.data, evento_horario: pl.evento.horario,
     evento_local: pl.evento.local + ' – ' + pl.evento.endereco,

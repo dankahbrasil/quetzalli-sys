@@ -43,11 +43,7 @@
   <form id="f" novalidate>
     <input class="hp" type="text" name="website" id="website" tabindex="-1" autocomplete="off">
 
-    <fieldset><legend>1. Quem solicita</legend>
-      <div class="seg">
-        <label><input type="radio" name="tipo" value="PJ" checked><span>Pessoa jurídica (atlética, DA, produtora)</span></label>
-        <label><input type="radio" name="tipo" value="PF"><span>Pessoa física</span></label>
-      </div>
+    <fieldset><legend>1. Empresa / organização solicitante</legend>
       <div id="pj">
         <label>Razão social</label><input id="razao_social">
         <div class="row"><div><label>CNPJ</label><input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00"></div>
@@ -55,11 +51,6 @@
         <label>Representante legal (nome completo)</label><input id="rep_nome">
         <div class="row"><div><label>Cargo</label><input id="rep_cargo" placeholder="Presidente"></div><div><label>CPF do representante</label><input id="rep_cpf" inputmode="numeric"></div></div>
         <div class="row"><div><label>RG</label><input id="rep_rg"></div><div><label>Órgão emissor</label><input id="rep_org" placeholder="SSP/SP"></div></div>
-      </div>
-      <div id="pf" class="hide">
-        <label>Nome completo</label><input id="nome">
-        <div class="row"><div><label>CPF</label><input id="cpf" inputmode="numeric"></div><div><label>Perfil no Instagram</label><input id="perfil_pf" placeholder="@perfil"></div></div>
-        <div class="row"><div><label>RG</label><input id="rg"></div><div><label>Órgão emissor</label><input id="org" placeholder="SSP/SP"></div></div>
       </div>
       <div class="row"><div><label>E-mail</label><input id="email" type="email" inputmode="email"></div><div><label>Telefone (WhatsApp)</label><input id="telefone" inputmode="tel" placeholder="(11) 90000-0000"></div></div>
       <div class="row"><div><label>CEP</label><input id="cep" inputmode="numeric" placeholder="00000-000"></div><div><label>Endereço completo</label><input id="endereco"></div></div>
@@ -135,10 +126,6 @@ function bind(id, fn) { $(id).addEventListener('input', e => { e.target.value = 
 ['cpf', 'rep_cpf'].forEach(i => bind(i, masks.cpf));
 bind('cep', masks.cep); bind('telefone', masks.tel);
 
-document.querySelectorAll('input[name=tipo]').forEach(r => r.addEventListener('change', () => {
-  const pj = document.querySelector('input[name=tipo]:checked').value === 'PJ';
-  $('pj').classList.toggle('hide', !pj); $('pf').classList.toggle('hide', pj);
-}));
 
 $('cep').addEventListener('blur', () => {
   const c = digits($('cep').value);
@@ -185,15 +172,13 @@ google.script.run.withSuccessHandler(cfg => {
 
 $('f').addEventListener('submit', ev => {
   ev.preventDefault(); $('err').textContent = '';
-  const pj = document.querySelector('input[name=tipo]:checked').value === 'PJ';
   const p = {
-    website: $('website').value, tipo_pessoa: pj ? 'PJ' : 'PF',
-    contratante: pj
-      ? { razao_social: $('razao_social').value, cnpj: $('cnpj').value, email: $('email').value, telefone: $('telefone').value, cep: $('cep').value, endereco: $('endereco').value,
+    website: $('website').value, tipo_pessoa: 'PJ',
+    contratante: { razao_social: $('razao_social').value, cnpj: $('cnpj').value, email: $('email').value, telefone: $('telefone').value, cep: $('cep').value, endereco: $('endereco').value,
           representante: { nome: $('rep_nome').value, cargo: $('rep_cargo').value, cpf: $('rep_cpf').value, rg: $('rep_rg').value, orgao_emissor: $('rep_org').value,
                            endereco: $('endereco').value, cep: $('cep').value, email: $('email').value, telefone: $('telefone').value } }
-      : { nome: $('nome').value, cpf: $('cpf').value, rg: $('rg').value, orgao_emissor: $('org').value, email: $('email').value, telefone: $('telefone').value, cep: $('cep').value, endereco: $('endereco').value },
-    perfil: pj ? $('perfil_pj').value : $('perfil_pf').value,
+    ,
+    perfil: $('perfil_pj').value,
     evento: { nome: $('ev_nome').value, data: $('ev_data').value, horario: $('ev_horario').value, local: $('ev_local').value, endereco: $('ev_endereco').value,
               publico: $('ev_publico').value, controle_acesso: $('ev_acesso').value, contratante: $('ev_contratante').value },
     retirada: { data: $('ret_data').value, horario: $('ret_horario').value, local: $('ret_local').value, responsavel: $('ret_resp').value, observacoes: $('ret_obs').value },
