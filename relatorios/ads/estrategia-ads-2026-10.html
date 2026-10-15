@@ -63,8 +63,8 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
 </header>
 
 <div class="alert">
-  <strong>Prioridade zero: o site sumiu do Google orgânico.</strong>
-  <p>Os cliques orgânicos caíram de cerca de 1.500 por semana para zero entre 20/09 e 13/10 (−100%). As impressões foram de 185 mil para 213 por semana. Até a home teve só 5 impressões em outubro. As posições médias nas páginas que ainda aparecem continuam boas (2 a 6). Isso indica que as páginas saíram do índice, e não que perderam ranking. Os motivos mais prováveis são uma tag <code>noindex</code>, um bloqueio no <code>robots.txt</code>, a loja com senha ou age-gate bloqueando o Googlebot, ou uma ação manual. Isso precisa ser corrigido antes de qualquer ajuste fino de mídia.</p>
+  <strong>Prioridade zero: o orgânico parou de ser medido.</strong>
+  <p>Os cliques orgânicos caíram de cerca de 1.500 por semana para zero entre 20/09 e 13/10 na propriedade <code>https://quetzalli.com.br/</code> (sem www). A causa mais provável, verificada na Shopify em 15/10: o domínio principal da loja é <code>www.quetzalli.com.br</code>, e o tema declara canonical com www. O tema não tem <code>noindex</code> nem <code>robots.txt</code> customizado. Quando o Google passa a indexar a versão com www, o tráfego migra para uma URL que essa propriedade não mede. O tráfego real provavelmente continua lá. Para medir de novo, crie a propriedade de Domínio <code>quetzalli.com.br</code> no Search Console e conecte-a ao Windsor.</p>
 </div>
 
 <section>
@@ -74,7 +74,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
     <div class="kpi"><span class="l">Investimento P2</span><span class="v">R$ 3.697</span><span class="d nt">−3,6% vs P1</span></div>
     <div class="kpi"><span class="l">Receita atribuída P2</span><span class="v">R$ 12.761</span><span class="d up">+12,7%</span></div>
     <div class="kpi"><span class="l">ROAS combinado</span><span class="v">3,45</span><span class="d up">era 2,95</span></div>
-    <div class="kpi"><span class="l">Cliques orgânicos/sem.</span><span class="v">0</span><span class="d dn">era ~1.500</span></div>
+    <div class="kpi"><span class="l">Cliques orgânicos/sem. (sem www)</span><span class="v">0</span><span class="d dn">era ~1.500 · ver alerta</span></div>
   </div>
   <p class="muted" style="font-size:13px">A receita é a que cada plataforma reporta (Meta: compras do pixel; Google: valor de conversão). Pode haver dupla contagem entre canais. Confira com o faturamento real da Shopify antes de usar como número financeiro.</p>
 </section>
@@ -135,7 +135,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
   <span class="eyebrow">Ações</span>
   <h2>O que fazer, em ordem</h2>
   <ol class="plan">
-    <li><strong>Hoje: recuperar a indexação.</strong> No Search Console, abra Indexação de páginas e Ações manuais e rode a Inspeção de URL na home e em <code>/blogs/drink/teor-alcoolico</code>. Confira <code>quetzalli.com.br/robots.txt</code>, o <code>&lt;meta name="robots"&gt;</code> do tema e se a loja está com senha ou se o age-gate (verificação de 18+) bloqueia robôs. Veja o que mudou no tema ou nos apps da Shopify por volta de 20 a 25/09. Depois de corrigir, reenvie o <code>sitemap.xml</code> e peça indexação das 20 URLs principais.</li>
+    <li><strong>Hoje: voltar a medir o orgânico.</strong> Crie a propriedade de Domínio <code>quetzalli.com.br</code> no Search Console (verificação por DNS TXT), envie <code>https://www.quetzalli.com.br/sitemap.xml</code> e conecte a nova propriedade ao Windsor. Rode a Inspeção de URL na versão com www para confirmar que as páginas estão indexadas, e confira Ações manuais. Padronize os links internos e o JSON-LD do <code>theme.liquid</code> para usar só www.</li>
   <li><strong>Search Brand.</strong> Subir o orçamento para R$ 25 por dia e usar CPA desejado ou Maximizar cliques com teto. Incluir as variações quetzali, quetzalli drink, quetzalli maracujá e quetzalli tequila. A meta é parcela de impressões acima de 80%.</li>
     <li><strong>PMax.</strong> Adicionar exclusão de marca para não disputar com a Brand, definir tROAS de 350%, separar grupos de recursos por produto (Maracujá, Gin Morango Graviola, Cachaça Cambuci Abacaxi, Kits) e revisar o relatório de canais para cortar Display e YouTube sem conversão. Reduzir para R$ 40 por dia.</li>
     <li><strong>Search Genérico (nova campanha).</strong> Testar termos de compra que o blog atendia: "drink pronto", "drinks prontos", "tequila com maracujá", "kit drinks presente", "drink pronto para festa". Usar correspondência de frase e exata e negativar termos informativos ("teor alcoólico", "receita").</li>
