@@ -63,7 +63,9 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
 </header>
 
 <div class="alert">
-  <strong>Prioridade zero: o orgânico parou de ser medido.</strong>
+  <strong>Orgânico: o site migrou para www e perdeu cerca de 35% dos cliques.</strong>
+  <p>Confirmado com a propriedade <code>https://www.quetzalli.com.br/</code>, conectada em 15/10. O Google trocou as URLs para a versão com www entre 22/09 e 01/10. Somando as duas versões, as impressões voltaram ao nível anterior (cerca de 150 mil por semana), mas os cliques caíram de cerca de 1.500 para cerca de 970 por semana. A perda está concentrada em "bebidas mais fortes do mundo" (−56% de cliques por dia, com impressões estáveis), na home (−47%) e nas buscas pela marca "quetzalli" (−64%), onde o site aparece em 2º ou 3º lugar. Parte das buscas de marca migrou para o anúncio Brand.</p>
+  <p class="muted" style="font-size:13px">Diagnóstico inicial, mantido como registro:</p>
   <p>Os cliques orgânicos caíram de cerca de 1.500 por semana para zero entre 20/09 e 13/10 na propriedade <code>https://quetzalli.com.br/</code> (sem www). A causa mais provável, verificada na Shopify em 15/10: o domínio principal da loja é <code>www.quetzalli.com.br</code>, e o tema declara canonical com www. O tema não tem <code>noindex</code> nem <code>robots.txt</code> customizado. Quando o Google passa a indexar a versão com www, o tráfego migra para uma URL que essa propriedade não mede. O tráfego real provavelmente continua lá. Para medir de novo, crie a propriedade de Domínio <code>quetzalli.com.br</code> no Search Console e conecte-a ao Windsor.</p>
 </div>
 
@@ -74,7 +76,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
     <div class="kpi"><span class="l">Investimento P2</span><span class="v">R$ 3.697</span><span class="d nt">−3,6% vs P1</span></div>
     <div class="kpi"><span class="l">Receita atribuída P2</span><span class="v">R$ 12.761</span><span class="d up">+12,7%</span></div>
     <div class="kpi"><span class="l">ROAS combinado</span><span class="v">3,45</span><span class="d up">era 2,95</span></div>
-    <div class="kpi"><span class="l">Cliques orgânicos/sem. (sem www)</span><span class="v">0</span><span class="d dn">era ~1.500 · ver alerta</span></div>
+    <div class="kpi"><span class="l">Cliques orgânicos/sem. (www + sem www)</span><span class="v">~970</span><span class="d dn">era ~1.500 (−35%)</span></div>
   </div>
   <p class="muted" style="font-size:13px">A receita é a que cada plataforma reporta (Meta: compras do pixel; Google: valor de conversão). Pode haver dupla contagem entre canais. Confira com o faturamento real da Shopify antes de usar como número financeiro.</p>
 </section>
@@ -85,7 +87,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
   <div class="charts">
     <div class="chart"><h3>Meta Ads</h3><svg id="c-meta" viewBox="0 0 300 170" role="img" aria-label="Investimento e ROAS semanal do Meta"></svg><span class="cap">Barras: investimento (R$) · Linha: ROAS. A última semana tem só 4 dias.</span></div>
     <div class="chart"><h3>Google Ads</h3><svg id="c-goog" viewBox="0 0 300 170" role="img" aria-label="Investimento e ROAS semanal do Google"></svg><span class="cap">Barras: investimento (R$) · Linha: ROAS. A última semana tem só 3 dias.</span></div>
-    <div class="chart"><h3>Search Console</h3><svg id="c-gsc" viewBox="0 0 300 170" role="img" aria-label="Cliques orgânicos semanais"></svg><span class="cap">Cliques orgânicos por semana.</span></div>
+    <div class="chart"><h3>Search Console</h3><svg id="c-gsc" viewBox="0 0 300 170" role="img" aria-label="Cliques orgânicos semanais"></svg><span class="cap">Cliques orgânicos por semana, somando www e sem www. A última semana tem só 3 dias.</span></div>
   </div>
 </section>
 
@@ -135,7 +137,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
   <span class="eyebrow">Ações</span>
   <h2>O que fazer, em ordem</h2>
   <ol class="plan">
-    <li><strong>Hoje: voltar a medir o orgânico.</strong> Crie a propriedade de Domínio <code>quetzalli.com.br</code> no Search Console (verificação por DNS TXT), envie <code>https://www.quetzalli.com.br/sitemap.xml</code> e conecte a nova propriedade ao Windsor. Rode a Inspeção de URL na versão com www para confirmar que as páginas estão indexadas, e confira Ações manuais. Padronize os links internos e o JSON-LD do <code>theme.liquid</code> para usar só www.</li>
+    <li><strong>Orgânico pós-migração.</strong> A medição pela propriedade www já está no Windsor. Envie <code>https://www.quetzalli.com.br/sitemap.xml</code> nela. Revise o título, a meta description e o primeiro parágrafo de <code>/blogs/curiosidades/bebidas-mais-fortes-do-mundo</code> para recuperar o CTR. Confira o título e a descrição da home para a busca "quetzalli". Rode a Inspeção de URL na versão com www para confirmar que as páginas estão indexadas, e confira Ações manuais. Padronize os links internos e o JSON-LD do <code>theme.liquid</code> para usar só www.</li>
   <li><strong>Search Brand.</strong> Subir o orçamento para R$ 25 por dia e usar CPA desejado ou Maximizar cliques com teto. Incluir as variações quetzali, quetzalli drink, quetzalli maracujá e quetzalli tequila. A meta é parcela de impressões acima de 80%.</li>
     <li><strong>PMax.</strong> Adicionar exclusão de marca para não disputar com a Brand, definir tROAS de 350%, separar grupos de recursos por produto (Maracujá, Gin Morango Graviola, Cachaça Cambuci Abacaxi, Kits) e revisar o relatório de canais para cortar Display e YouTube sem conversão. Reduzir para R$ 40 por dia.</li>
     <li><strong>Search Genérico (nova campanha).</strong> Testar termos de compra que o blog atendia: "drink pronto", "drinks prontos", "tequila com maracujá", "kit drinks presente", "drink pronto para festa". Usar correspondência de frase e exata e negativar termos informativos ("teor alcoólico", "receita").</li>
@@ -186,7 +188,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:6px}
     combo('c-goog',['17/8','24/8','31/8','7/9','14/9','21/9','28/9','5/10','12/10'],
       [452,262,316,172,420,380,467,527,196],[5.29,4.62,6.54,4.24,4.84,6.70,2.82,3.58,0.67],{bmax:600,lmax:8,line:true,partial:true});
     combo('c-gsc',['16/8','23/8','30/8','6/9','13/9','20/9','27/9','4/10','11/10'],
-      [1467,1490,1472,1562,1518,1210,292,35,0],[],{bmax:1600,line:false});
+      [1469,1490,1473,1563,1519,1396,1150,972,394],[],{bmax:1600,line:false,partial:true});
   }
   draw();
   try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw)}catch(e){}
