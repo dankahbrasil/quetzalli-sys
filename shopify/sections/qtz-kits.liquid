@@ -26,8 +26,8 @@
               {%- if v.compare_at_price > v.price -%}<span class="qtz-card__save">-{{ v.compare_at_price | minus: v.price | times: 100 | divided_by: v.compare_at_price }}%</span>{%- endif -%}
             </a>
             <div class="qtz-card__body">
-              <h3 class="qtz-card__title" style="font-size:19px">{{ product.metafields.custom.frutas | default: product.title }}</h3>
-              {%- if product.metafields.custom.perfil_sabor != blank -%}<div class="qtz-card__desc">{{ product.metafields.custom.perfil_sabor }}</div>{%- endif -%}
+              <h3 class="qtz-card__title" style="font-size:19px">{{ product.metafields.custom.frutas.value | default: product.title }}</h3>
+              {%- if product.metafields.custom.perfil_sabor.value != blank -%}<div class="qtz-card__desc">{{ product.metafields.custom.perfil_sabor.value }}</div>{%- endif -%}
               <div class="qtz-card__price">
                 <b>{{ v.price | money }}</b>
                 {%- assign n = product.metafields.custom.garrafas.value -%}

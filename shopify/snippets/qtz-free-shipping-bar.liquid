@@ -13,7 +13,9 @@
 <script>
 (function(){
   if(window.__qtzShip) return; window.__qtzShip=true;
-  var fmt=function(c){return 'R$ '+(c/100).toFixed(2).replace('.',',');};
+  var nf=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+  var fmt=function(c){return nf.format(c/100);};
+  var root=(window.Shopify&&Shopify.routes&&Shopify.routes.root)||'/';
   function render(total){
     document.querySelectorAll('[data-qtz-ship]').forEach(function(el){
       var t=+el.dataset.threshold,left=t-total,pct=Math.min(100,total/t*100);
@@ -21,9 +23,9 @@
       el.querySelector('[data-qtz-ship-msg]').textContent= total===0?'Frete grátis a partir de '+fmt(t):(left<=0?'Frete grátis liberado.':'Faltam '+fmt(left)+' pro frete grátis');
     });
   }
-  function refresh(){fetch('/cart.js').then(function(r){return r.json()}).then(function(c){render(c.total_price)}).catch(function(){});}
+  function refresh(){fetch(root+'cart.js').then(function(r){return r.json()}).then(function(c){render(c.total_price)}).catch(function(){});}
   // Atualiza após qualquer chamada de carrinho feita pelo tema (Palo Alto usa fetch na gaveta do carrinho)
-  var f=window.fetch;window.fetch=function(){var u=String(arguments[0]&&arguments[0].url||arguments[0]);var p=f.apply(this,arguments);if(/\/cart\/(add|change|update|clear)/.test(u)){p.then(function(){setTimeout(refresh,150)});}return p;};
+  var f=window.fetch;window.fetch=function(){try{var u=String(arguments[0]&&arguments[0].url||arguments[0]);}catch(e){var u='';}var p=f.apply(this,arguments);if(/\/cart\/(add|change|update|clear)/.test(u)){p.then(function(){setTimeout(refresh,150)},function(){});}return p;};
   ['theme:cart:change','cart:refresh','cart:updated'].forEach(function(e){document.addEventListener(e,refresh)});
 })();
 </script>

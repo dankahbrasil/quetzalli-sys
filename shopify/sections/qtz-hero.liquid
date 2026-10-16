@@ -1,7 +1,7 @@
 <section class="qtz qtz-hero">
   <div class="qtz-hero__copy">
     {%- if section.settings.tag != blank -%}<div><span class="qtz-tag">{{ section.settings.tag }}</span></div>{%- endif -%}
-    <h2 class="qtz-display">{{ section.settings.title }} {% if section.settings.title_accent != blank %}<em>{{ section.settings.title_accent }}</em>{% endif %}</h2>
+    <h1 class="qtz-display">{{ section.settings.title }} {% if section.settings.title_accent != blank %}<em>{{ section.settings.title_accent }}</em>{% endif %}</h1>
     {%- if section.settings.text != blank -%}<p class="qtz-hero__sub">{{ section.settings.text }}</p>{%- endif -%}
     <div class="qtz-hero__ctas">
       {%- assign p = section.settings.product -%}
@@ -11,7 +11,7 @@
           <button type="submit" class="qtz-btn qtz-btn--solid" {% unless p.available %}disabled{% endunless %}>{{ section.settings.btn_label }} · {{ p.price | money_without_trailing_zeros }}</button>
         {%- endform -%}
       {%- endif -%}
-      {%- if section.settings.btn2_label != blank -%}<a class="qtz-btn qtz-btn--outline" href="{{ section.settings.btn2_link }}">{{ section.settings.btn2_label }}</a>{%- endif -%}
+      {%- if section.settings.btn2_label != blank -%}<a class="qtz-btn qtz-btn--outline" href="{{ section.settings.btn2_link | default: '#sabores' }}">{{ section.settings.btn2_label }}</a>{%- endif -%}
     </div>
     {%- if section.blocks.size > 0 -%}
       <div class="qtz-hero__stats">

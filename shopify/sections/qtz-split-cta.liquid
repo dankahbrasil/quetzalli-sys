@@ -5,8 +5,8 @@
       <h2>{{ block.settings.title }}</h2>
       {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
       <div class="qtz-split__ctas">
-        {%- if block.settings.btn1 != blank -%}<a class="qtz-btn {% if block.settings.bg == 'orange' %}qtz-btn--ink{% else %}qtz-btn--solid{% endif %}" href="{{ block.settings.btn1_link }}">{{ block.settings.btn1 }}</a>{%- endif -%}
-        {%- if block.settings.btn2 != blank -%}<a class="qtz-btn {% if block.settings.bg == 'orange' %}qtz-btn--outline{% else %}qtz-btn--ink{% endif %}" href="{{ block.settings.btn2_link }}">{{ block.settings.btn2 }}</a>{%- endif -%}
+        {%- if block.settings.btn1 != blank -%}<a class="qtz-btn {% if block.settings.bg == 'orange' %}qtz-btn--ink{% else %}qtz-btn--solid{% endif %}" href="{{ block.settings.btn1_link | default: '#' }}">{{ block.settings.btn1 }}</a>{%- endif -%}
+        {%- if block.settings.btn2 != blank -%}<a class="qtz-btn {% if block.settings.bg == 'orange' %}qtz-btn--outline{% else %}qtz-btn--ink{% endif %}" href="{{ block.settings.btn2_link | default: '#' }}">{{ block.settings.btn2 }}</a>{%- endif -%}
       </div>
     </div>
   {%- endfor -%}
@@ -23,6 +23,6 @@
     {"type":"text","id":"btn2","label":"Botão 2"},{"type":"url","id":"btn2_link","label":"Link botão 2"}]}],
   "presets":[{"name":"Eventos + Revenda","blocks":[
     {"type":"panel","settings":{"bg":"orange","eyebrow":"Eventos","title":"Vai dar festa? A gente faz a conta.","text":"4 garrafas servem um jantar de 12 a 16 pessoas em jarra. Pra casamento, aniversário ou ativação de marca, monte o pedido com quem entende.","btn1":"Calcular garrafas","btn2":"Ativações"}},
-    {"type":"panel","settings":{"bg":"blue","eyebrow":"Atacado & revenda","title":"Coloca no cardápio. Zero bartender.","text":"Bar, empório ou restaurante: os 4 sabores em caixa fechada, prontos pra servir. Fale direto com um especialista.","btn1":"Falar no WhatsApp","btn1_link":"https://wa.me/5511956533601","btn2":"Seja revendedor"}}]}]
+    {"type":"panel","settings":{"bg":"blue","eyebrow":"Atacado & revenda","title":"Coloca no cardápio. Zero bartender.","text":"Bar, empório ou restaurante: os 4 sabores em caixa fechada, prontos pra servir. Fale direto com um especialista.","btn1":"Falar no WhatsApp","btn2":"Seja revendedor"}}]}]
 }
 {% endschema %}

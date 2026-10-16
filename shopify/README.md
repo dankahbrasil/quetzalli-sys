@@ -17,14 +17,18 @@ Seções personalizadas que reproduzem o layout de "Home Quetzalli - Proposta". 
 ## Instalação
 1. **Loja virtual → Temas → Palo Alto → ⋯ → Duplicar.** Trabalhe só na cópia.
 2. Na cópia: **⋯ → Editar código**. Em cada pasta (Assets / Snippets / Sections) clique em *Adicionar novo arquivo*, use o mesmo nome e cole o conteúdo.
-3. Em **layout/theme.liquid**, antes de `</head>`, adicione:
+3. Em **layout/theme.liquid**, antes de `</head>`, adicione (as fontes vêm por `<link>`, não por `@import` no CSS, para não atrasar a página):
    ```liquid
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;1,700&family=Raleway:wght@400;500;600;700;800;900&display=swap">
    {{ 'qtz-home.css' | asset_url | stylesheet_tag }}
    ```
-4. Barra de frete grátis: em **sections/header.liquid** (ou no snippet do carrinho/drawer do Palo Alto), logo depois do header, adicione:
+4. Barra de frete grátis: ainda em **layout/theme.liquid**, logo **depois** da linha `{% sections 'header-group' %}` (no Palo Alto 9 o header é um grupo de seções — não edite `sections/header.liquid`), adicione:
    ```liquid
    {% render 'qtz-free-shipping-bar', threshold: 159 %}
    ```
+   O valor precisa bater com a regra de frete grátis em *Configurações → Frete e entrega*.
 5. **Metafields** (Configurações → Dados personalizados → Produtos → Adicionar definição):
    | Nome | Namespace e chave | Tipo | Exemplo |
    |---|---|---|---|
@@ -38,7 +42,17 @@ Seções personalizadas que reproduzem o layout de "Home Quetzalli - Proposta". 
 6. **Personalizar → Página inicial**: remova as seções antigas e adicione, nesta ordem:
    Hero Quetzalli → Sabores Quetzalli (coleção *Todos os drinks*) → Kits Quetzalli (coleção *Kit*) → Ingredientes Quetzalli → Avaliações (bloco do app existente) → Eventos + Revenda → Blog Quetzalli.
 7. Barra de anúncio (seção nativa): deixe **uma** mensagem: "Frete grátis acima de R$ 159 · São Paulo sem mínimo".
-8. Pré-visualize no celular → **Publicar**.
+8. No painel **Atacado & revenda**, cole o link do WhatsApp (`https://wa.me/5511956533601`) no campo *Link botão 1* — links externos não vão no preset.
+9. Pré-visualize no celular → **Publicar**.
+
+## Comportamento dos botões "Adicionar"
+Os botões usam o formulário nativo da Shopify (`/cart/add`): o produto entra no carrinho e o cliente vai para a página `/cart`. Funciona em qualquer tema. Se quiser que abra a gaveta do carrinho do Palo Alto sem sair da home, é preciso ligar ao JavaScript do tema (envie o `assets/` do Palo Alto e isso é ajustado).
+
+## Antes de publicar — checklist
+- [ ] Metafields criados com os tipos exatos acima (Cor, Número inteiro etc.).
+- [ ] Coleções *Todos os drinks* e *Kit* escolhidas nas seções.
+- [ ] Preços da "escada" de kits (blocos de texto) conferidos com os preços reais.
+- [ ] Aviso legal de bebida alcoólica (17% > 13 °GL, Lei 9.294/96 e CONAR Anexo A) e "Venda proibida para menores de 18 anos" presentes no rodapé/age gate.
 
 ## Fontes
 - **Calibre** é fonte licenciada: para web, confirme a licença com a Klim Type Foundry. Com licença, suba os .woff2 em Assets e descomente o bloco @font-face no topo do CSS.
