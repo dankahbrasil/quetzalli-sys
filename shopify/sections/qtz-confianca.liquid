@@ -1,0 +1,42 @@
+<section class="qtz qtz-trust">
+  <div class="qtz-wrap qtz-trust__layout">
+    <div class="qtz-trust__col">
+      <p class="qtz-eyebrow" style="margin:0">{{ section.settings.pay_title }}</p>
+      <ul class="qtz-trust__pay">
+        {%- for block in section.blocks -%}
+          {%- capture icon -%}{{ block.settings.type | payment_type_svg_tag: class: 'qtz-trust__icon' }}{%- endcapture -%}
+          <li {{ block.shopify_attributes }}>
+            {%- if icon contains '<svg' -%}{{ icon }}<span class="qtz-sr">{{ block.settings.label }}</span>
+            {%- else -%}<span class="qtz-trust__chip">{{ block.settings.label }}</span>{%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+      {%- if section.settings.pay_text != blank -%}<p class="qtz-trust__note">{{ section.settings.pay_text }}</p>{%- endif -%}
+    </div>
+    <div class="qtz-trust__col qtz-trust__legal">
+      <p class="qtz-trust__warn">{{ section.settings.legal_title }}</p>
+      {%- if section.settings.legal_text != blank -%}<p class="qtz-trust__note">{{ section.settings.legal_text }}</p>{%- endif -%}
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Pagamento e aviso legal",
+  "settings": [
+    {"type":"text","id":"pay_title","label":"Título pagamentos","default":"Formas de pagamento"},
+    {"type":"text","id":"pay_text","label":"Texto pagamentos","default":"Pix com aprovação na hora. Cartão de crédito via Mercado Pago. Compra 100% segura."},
+    {"type":"text","id":"legal_title","label":"Aviso legal (destaque)","default":"Beba com moderação. Venda proibida para menores de 18 anos."},
+    {"type":"textarea","id":"legal_text","label":"Texto complementar","default":"Se beber, não dirija. Bebida alcoólica, 17% vol."}
+  ],
+  "blocks":[{"type":"payment","name":"Forma de pagamento","limit":10,"settings":[
+    {"type":"text","id":"type","label":"Código do ícone Shopify","info":"Ex.: pix, visa, master, elo, american_express, hipercard. Se a Shopify não tiver o ícone, aparece o nome em texto."},
+    {"type":"text","id":"label","label":"Nome"}]}],
+  "presets":[{"name":"Pagamento e aviso legal","blocks":[
+    {"type":"payment","settings":{"type":"pix","label":"Pix"}},
+    {"type":"payment","settings":{"type":"visa","label":"Visa"}},
+    {"type":"payment","settings":{"type":"master","label":"Mastercard"}},
+    {"type":"payment","settings":{"type":"elo","label":"Elo"}},
+    {"type":"payment","settings":{"type":"american_express","label":"American Express"}},
+    {"type":"payment","settings":{"type":"hipercard","label":"Hipercard"}}]}]
+}
+{% endschema %}

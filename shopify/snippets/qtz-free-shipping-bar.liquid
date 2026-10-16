@@ -1,5 +1,10 @@
-{%- comment -%} Uso: {% render 'qtz-free-shipping-bar', threshold: 159 %} {%- endcomment -%}
-{%- assign t = threshold | default: 159 | times: 100 -%}
+{%- comment -%}
+  Uso: {% render 'qtz-free-shipping-bar' %}
+  O valor vem de Personalizar → Configurações do tema → Carrinho → "free_shipping_limit" (hoje 159,90),
+  o mesmo usado na barra de anúncio (||amount||). Para forçar outro valor: threshold: 159.9
+{%- endcomment -%}
+{%- assign limite = threshold | default: settings.free_shipping_limit | default: '159,90' | append: '' | replace: ',', '.' -%}
+{%- assign t = limite | times: 100 | round -%}
 {%- assign left = t | minus: cart.total_price -%}
 {%- assign pct = cart.total_price | times: 100 | divided_by: t -%}{%- if pct > 100 -%}{%- assign pct = 100 -%}{%- endif -%}
 <div class="qtz qtz-ship" data-qtz-ship data-threshold="{{ t }}">
