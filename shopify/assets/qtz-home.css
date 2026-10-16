@@ -1,0 +1,105 @@
+/* Quetzalli — Home. Escopo .qtz para não afetar o resto do Palo Alto. */
+/* Com licença web da Calibre, suba os arquivos e descomente:
+@font-face{font-family:Calibre;src:url('Calibre-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Calibre;src:url('Calibre-Semibold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:Calibre;src:url('Calibre-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:Calibre;src:url('Calibre-Black.woff2') format('woff2');font-weight:900;font-display:swap}
+*/
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;1,700&family=Raleway:wght@400;500;600;700;800;900&display=swap');
+.qtz{--o:#e39725;--o20:#f9eAd3;--o40:#f4d5a8;--o60:#eec17c;--g:#404041;--g60:#8c8c8d;--k:#000;--w:#fff;--red:#b73a3a;--grn:#4f765d;--blu:#425c74;--cop:#b95119;--muted:#f4f2ef;--hair:#e2e2e2;
+  --fb:Calibre,Raleway,system-ui,sans-serif;--fd:'Bodoni Moda',Georgia,serif;
+  font-family:var(--fb);color:var(--g);-webkit-font-smoothing:antialiased}
+.qtz *{box-sizing:border-box}
+.qtz a{color:inherit;text-decoration:none}
+.qtz a:hover{color:var(--cop)}
+.qtz-wrap{padding:80px clamp(24px,4vw,48px);max-width:1440px;margin:0 auto}
+.qtz-eyebrow{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cop);margin:0 0 10px}
+.qtz-h2{font-family:var(--fb);font-weight:900;font-size:clamp(32px,4vw,48px);line-height:1;letter-spacing:-.02em;color:var(--k);margin:0}
+.qtz-display{font-family:var(--fd);font-weight:700;line-height:.95;letter-spacing:-.01em;margin:0}
+.qtz-display em{font-style:italic;color:var(--cop)}
+.qtz-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+.qtz-lead{font-size:17px;line-height:1.5;color:var(--g);margin:0;max-width:440px}
+/* Botões */
+.qtz-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--fb);font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:15px;padding:14px 26px;border:1.5px solid var(--k);border-radius:2px;cursor:pointer;transition:background .16s ease,transform .12s ease;line-height:1}
+.qtz-btn:active{transform:translateY(1px)}
+.qtz-btn--solid{background:var(--o);color:var(--k)!important}
+.qtz-btn--solid:hover{background:var(--o60)}
+.qtz-btn--ink{background:var(--k);color:var(--w)!important}
+.qtz-btn--ink:hover{background:var(--g)}
+.qtz-btn--outline{background:transparent;color:var(--k)!important}
+.qtz-btn--outline:hover{background:var(--k);color:var(--w)!important}
+.qtz-btn--full{width:100%}
+.qtz-btn--sm{padding:11px 16px;font-size:14px}
+.qtz-tag{display:inline-flex;align-items:center;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px;border:1.5px solid var(--k);background:var(--o);color:var(--k)}
+.qtz-stripes{display:flex;height:10px}.qtz-stripes span{flex:1}
+/* Hero */
+.qtz-hero{background:var(--o20);color:var(--k);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.qtz-hero__copy{padding:clamp(40px,6vw,88px) clamp(24px,5vw,64px);display:flex;flex-direction:column;justify-content:center;gap:24px}
+.qtz-hero .qtz-display{font-size:clamp(48px,7vw,96px)}
+.qtz-hero__sub{font-size:20px;line-height:1.45;color:var(--g);margin:0;max-width:480px}
+.qtz-hero__ctas{display:flex;gap:12px;flex-wrap:wrap}
+.qtz-hero__stats{display:flex;gap:28px;flex-wrap:wrap;padding-top:20px;border-top:1.5px solid var(--k)}
+.qtz-hero__stats b{display:block;font-weight:900;font-size:26px;color:var(--k)}
+.qtz-hero__stats span{font-size:13px;color:var(--g);font-weight:500}
+.qtz-hero__media{background:var(--o);min-height:560px;position:relative;border-left:1.5px solid var(--k)}
+.qtz-hero__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media(max-width:860px){.qtz-hero__media{border-left:0;border-top:1.5px solid var(--k);min-height:420px}}
+/* Grids de produto */
+.qtz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:20px}
+.qtz-card{border:1.5px solid var(--k);background:var(--w);display:flex;flex-direction:column}
+.qtz-card__media{aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;border-bottom:1.5px solid var(--k)}
+.qtz-card__media img{max-width:100%;max-height:100%;object-fit:contain;display:block;mix-blend-mode:multiply}
+.qtz-card__badge{position:absolute;top:12px;left:12px;background:var(--k);color:var(--w);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.qtz-card__save{position:absolute;top:12px;right:12px;background:var(--o);color:var(--k);font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;border:1.5px solid var(--k)}
+.qtz-card__body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
+.qtz-card__kicker{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g)}
+.qtz-card__title{font-family:var(--fb);font-weight:800;font-size:22px;line-height:1.1;color:var(--k);margin:0}
+.qtz-card__desc{font-size:15px;color:var(--g);line-height:1.4}
+.qtz-card__price{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:auto;padding-top:14px;flex-wrap:wrap}
+.qtz-card__price b{font-weight:900;font-size:22px;color:var(--k)}
+.qtz-card__price s{font-size:14px;color:var(--g)}
+.qtz-card__unit{font-size:14px;font-weight:700;color:var(--cop)}
+.qtz-card form{margin:0}
+/* Kits */
+.qtz-kits{background:var(--muted);border-top:1.5px solid var(--k);border-bottom:1.5px solid var(--k)}
+.qtz-kits__layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:48px;align-items:start}
+.qtz-kits__aside{display:flex;flex-direction:column;gap:16px;position:sticky;top:120px}
+.qtz-kits .qtz-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:16px}
+.qtz-kits .qtz-card__media{aspect-ratio:1/1;padding:16px;background:var(--w)}
+.qtz-ladder{border:1.5px solid var(--k);background:var(--w);padding:16px 18px;display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.qtz-ladder__row{display:flex;align-items:center;gap:12px;font-size:14px}
+.qtz-ladder__row span:first-child{font-weight:600;color:var(--k);width:96px;flex:none}
+.qtz-ladder__bar{flex:1;height:14px;background:var(--muted)}.qtz-ladder__bar i{display:block;height:100%}
+.qtz-ladder__row b{font-weight:800;color:var(--k);width:72px;text-align:right;flex:none}
+/* Ingredientes */
+.qtz-ingr{background:var(--grn);color:var(--w)}
+.qtz-ingr__layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:48px;align-items:center}
+.qtz-ingr .qtz-display{font-size:clamp(40px,5vw,72px);color:var(--w)}
+.qtz-ingr .qtz-display em{color:var(--o40)}
+.qtz-ingr__list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 32px}
+.qtz-ingr__item{border-top:3px solid var(--o40);padding-top:14px}
+.qtz-ingr__item b{display:block;font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.04em}
+.qtz-ingr__item p{font-size:15px;color:var(--w);line-height:1.45;margin:6px 0 0}
+/* Split CTA */
+.qtz-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));border-top:1.5px solid var(--k)}
+.qtz-split__item{padding:64px clamp(24px,4vw,48px);display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+.qtz-split__item h2{font-family:var(--fb);font-weight:900;font-size:clamp(30px,3.4vw,42px);line-height:1.02;letter-spacing:-.02em;margin:0;color:inherit}
+.qtz-split__item p{font-size:17px;line-height:1.5;margin:0;max-width:440px;color:inherit}
+.qtz-split__item .qtz-eyebrow{color:inherit;font-weight:800}
+.qtz-split__ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.qtz-split--orange{background:var(--o);color:var(--k)}
+.qtz-split--blue{background:var(--blu);color:var(--w)}
+.qtz-split--blue .qtz-eyebrow{color:var(--o40)}
+.qtz-split--green{background:var(--grn);color:var(--w)}
+/* Blog */
+.qtz-blog{border-top:1.5px solid var(--k)}
+.qtz-blog__list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));border-top:1.5px solid var(--k)}
+.qtz-blog__item{padding:24px 24px 28px 0;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--hair)}
+.qtz-blog__item small{font-size:13px;font-weight:600;color:var(--g)}
+.qtz-blog__item span{font-weight:800;font-size:20px;line-height:1.2;color:var(--k)}
+.qtz-link{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid currentColor;padding-bottom:2px;color:var(--k)}
+/* Barra de frete */
+.qtz-ship{display:flex;align-items:center;gap:16px;padding:8px clamp(16px,3vw,32px);background:var(--muted);border-bottom:1px solid var(--hair);font-family:var(--fb)}
+.qtz-ship__msg{font-size:13px;font-weight:600;color:var(--k);flex:none}
+.qtz-ship__track{flex:1;height:6px;background:var(--w);border:1px solid var(--k);min-width:80px}
+.qtz-ship__fill{height:100%;background:var(--o);transition:width .24s ease}

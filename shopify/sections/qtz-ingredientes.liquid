@@ -1,0 +1,26 @@
+<section class="qtz qtz-ingr" id="ingredientes">
+  <div class="qtz-wrap qtz-ingr__layout">
+    <h2 class="qtz-display">{{ section.settings.title }} {% if section.settings.title_accent != blank %}<em>{{ section.settings.title_accent }}</em>{% endif %}</h2>
+    <div class="qtz-ingr__list">
+      {%- for block in section.blocks -%}
+        <div class="qtz-ingr__item" style="border-top-color: {{ block.settings.color }}" {{ block.shopify_attributes }}><b>{{ block.settings.name }}</b><p>{{ block.settings.text }}</p></div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Ingredientes Quetzalli",
+  "settings": [
+    {"type":"text","id":"title","label":"Título","default":"Confere o rótulo."},
+    {"type":"text","id":"title_accent","label":"Destaque em itálico","default":"Não tem nada estranho."}
+  ],
+  "blocks":[{"type":"item","name":"Ingrediente","limit":6,"settings":[
+    {"type":"text","id":"name","label":"Nome"},{"type":"textarea","id":"text","label":"Texto"},{"type":"color","id":"color","label":"Cor da linha","default":"#f4d5a8"}]}],
+  "presets":[{"name":"Ingredientes Quetzalli","blocks":[
+    {"type":"item","settings":{"name":"Tequila","text":"Blanco, de agave azul. Mexicana — porque tequila só existe lá.","color":"#a0aebb"}},
+    {"type":"item","settings":{"name":"Maracujá","text":"Polpa de fruta. Nada de xarope, extrato ou aroma.","color":"#f4d5a8"}},
+    {"type":"item","settings":{"name":"Limão","text":"O cítrico que amarra tudo e deixa o final seco.","color":"#a7bbae"}},
+    {"type":"item","settings":{"name":"Calda de agave","text":"Adoça na medida. Da mesma planta da tequila.","color":"#dca88c"}}]}]
+}
+{% endschema %}

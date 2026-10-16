@@ -1,0 +1,46 @@
+<section class="qtz qtz-hero">
+  <div class="qtz-hero__copy">
+    {%- if section.settings.tag != blank -%}<div><span class="qtz-tag">{{ section.settings.tag }}</span></div>{%- endif -%}
+    <h2 class="qtz-display">{{ section.settings.title }} {% if section.settings.title_accent != blank %}<em>{{ section.settings.title_accent }}</em>{% endif %}</h2>
+    {%- if section.settings.text != blank -%}<p class="qtz-hero__sub">{{ section.settings.text }}</p>{%- endif -%}
+    <div class="qtz-hero__ctas">
+      {%- assign p = section.settings.product -%}
+      {%- if p != blank -%}
+        {%- form 'product', p -%}
+          <input type="hidden" name="id" value="{{ p.selected_or_first_available_variant.id }}">
+          <button type="submit" class="qtz-btn qtz-btn--solid" {% unless p.available %}disabled{% endunless %}>{{ section.settings.btn_label }} · {{ p.price | money_without_trailing_zeros }}</button>
+        {%- endform -%}
+      {%- endif -%}
+      {%- if section.settings.btn2_label != blank -%}<a class="qtz-btn qtz-btn--outline" href="{{ section.settings.btn2_link }}">{{ section.settings.btn2_label }}</a>{%- endif -%}
+    </div>
+    {%- if section.blocks.size > 0 -%}
+      <div class="qtz-hero__stats">
+        {%- for block in section.blocks -%}<div {{ block.shopify_attributes }}><b>{{ block.settings.value }}</b><span>{{ block.settings.label }}</span></div>{%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+  <div class="qtz-hero__media">
+    {%- if section.settings.image != blank -%}
+      {{ section.settings.image | image_url: width: 1600 | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '(min-width: 860px) 50vw, 100vw', widths: '600,900,1200,1600', alt: section.settings.image.alt }}
+    {%- endif -%}
+  </div>
+</section>
+<div class="qtz-stripes" aria-hidden="true"><span style="background:#e39725"></span><span style="background:#b73a3a"></span><span style="background:#4f765d"></span><span style="background:#425c74"></span><span style="background:#b95119"></span></div>
+{% schema %}
+{
+  "name": "Hero Quetzalli",
+  "settings": [
+    {"type":"text","id":"tag","label":"Selo","default":"Ouro · World Premix Awards 2023"},
+    {"type":"text","id":"title","label":"Título","default":"O drink perfeito."},
+    {"type":"text","id":"title_accent","label":"Título (destaque em itálico)","default":"Sempre."},
+    {"type":"textarea","id":"text","label":"Texto","default":"Tequila de verdade, maracujá de verdade. Abre, põe gelo, pronto. Sem coqueteleira e sem os 5 ingredientes que você ia esquecer de comprar."},
+    {"type":"product","id":"product","label":"Produto do botão principal"},
+    {"type":"text","id":"btn_label","label":"Texto do botão principal","default":"Comprar"},
+    {"type":"text","id":"btn2_label","label":"Botão secundário","default":"Ver os 4 sabores"},
+    {"type":"url","id":"btn2_link","label":"Link do botão secundário"},
+    {"type":"image_picker","id":"image","label":"Foto (4:5, 1600×2000)"}
+  ],
+  "blocks":[{"type":"stat","name":"Número","limit":4,"settings":[{"type":"text","id":"value","label":"Valor","default":"589"},{"type":"text","id":"label","label":"Legenda","default":"avaliações"}]}],
+  "presets":[{"name":"Hero Quetzalli","blocks":[{"type":"stat","settings":{"value":"589","label":"avaliações"}},{"type":"stat","settings":{"value":"4","label":"ingredientes, só"}},{"type":"stat","settings":{"value":"17%","label":"teor alcoólico"}}]}]
+}
+{% endschema %}

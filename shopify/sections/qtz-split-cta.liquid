@@ -1,0 +1,28 @@
+<section class="qtz qtz-split" id="eventos">
+  {%- for block in section.blocks -%}
+    <div class="qtz-split__item qtz-split--{{ block.settings.bg }}" {{ block.shopify_attributes }}>
+      {%- if block.settings.eyebrow != blank -%}<p class="qtz-eyebrow" style="margin:0">{{ block.settings.eyebrow }}</p>{%- endif -%}
+      <h2>{{ block.settings.title }}</h2>
+      {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
+      <div class="qtz-split__ctas">
+        {%- if block.settings.btn1 != blank -%}<a class="qtz-btn {% if block.settings.bg == 'orange' %}qtz-btn--ink{% else %}qtz-btn--solid{% endif %}" href="{{ block.settings.btn1_link }}">{{ block.settings.btn1 }}</a>{%- endif -%}
+        {%- if block.settings.btn2 != blank -%}<a class="qtz-btn {% if block.settings.bg == 'orange' %}qtz-btn--outline{% else %}qtz-btn--ink{% endif %}" href="{{ block.settings.btn2_link }}">{{ block.settings.btn2 }}</a>{%- endif -%}
+      </div>
+    </div>
+  {%- endfor -%}
+</section>
+{% schema %}
+{
+  "name": "Eventos + Revenda",
+  "blocks":[{"type":"panel","name":"Painel","limit":2,"settings":[
+    {"type":"select","id":"bg","label":"Cor de fundo","options":[{"value":"orange","label":"Laranja Maracujá"},{"value":"blue","label":"Azul Agave"},{"value":"green","label":"Verde Quetzal"}],"default":"orange"},
+    {"type":"text","id":"eyebrow","label":"Sobretítulo"},
+    {"type":"text","id":"title","label":"Título"},
+    {"type":"textarea","id":"text","label":"Texto"},
+    {"type":"text","id":"btn1","label":"Botão 1"},{"type":"url","id":"btn1_link","label":"Link botão 1"},
+    {"type":"text","id":"btn2","label":"Botão 2"},{"type":"url","id":"btn2_link","label":"Link botão 2"}]}],
+  "presets":[{"name":"Eventos + Revenda","blocks":[
+    {"type":"panel","settings":{"bg":"orange","eyebrow":"Eventos","title":"Vai dar festa? A gente faz a conta.","text":"4 garrafas servem um jantar de 12 a 16 pessoas em jarra. Pra casamento, aniversário ou ativação de marca, monte o pedido com quem entende.","btn1":"Calcular garrafas","btn2":"Ativações"}},
+    {"type":"panel","settings":{"bg":"blue","eyebrow":"Atacado & revenda","title":"Coloca no cardápio. Zero bartender.","text":"Bar, empório ou restaurante: os 4 sabores em caixa fechada, prontos pra servir. Fale direto com um especialista.","btn1":"Falar no WhatsApp","btn1_link":"https://wa.me/5511956533601","btn2":"Seja revendedor"}}]}]
+}
+{% endschema %}

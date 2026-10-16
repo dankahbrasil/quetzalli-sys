@@ -1,0 +1,33 @@
+{%- assign blog = blogs[section.settings.blog] -%}
+{%- assign meses = 'jan,fev,mar,abr,mai,jun,jul,ago,set,out,nov,dez' | split: ',' -%}
+<section class="qtz qtz-blog">
+  <div class="qtz-wrap">
+    <div class="qtz-head" style="margin-bottom:32px">
+      <h2 class="qtz-h2" style="font-size:clamp(28px,3.4vw,40px)">{{ section.settings.title }}</h2>
+      {%- if blog -%}<a class="qtz-link" href="{{ blog.url }}">Ir pro blog</a>{%- endif -%}
+    </div>
+    <div class="qtz-blog__list">
+      {%- if blog -%}
+        {%- for article in blog.articles limit: section.settings.limit -%}
+          {%- assign m = article.published_at | date: '%m' | minus: 1 -%}
+          {%- assign words = article.content | strip_html | split: ' ' | size -%}
+          <a class="qtz-blog__item" href="{{ article.url }}">
+            <small>{{ article.published_at | date: '%d' }} {{ meses[m] }} {{ article.published_at | date: '%Y' }} · {{ words | divided_by: 200 | plus: 1 }} min</small>
+            <span>{{ article.title }}</span>
+          </a>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Blog Quetzalli",
+  "settings": [
+    {"type":"text","id":"title","label":"Título","default":"Pra quem gosta de fuçar."},
+    {"type":"blog","id":"blog","label":"Blog"},
+    {"type":"range","id":"limit","label":"Posts","min":3,"max":6,"step":3,"default":3}
+  ],
+  "presets":[{"name":"Blog Quetzalli"}]
+}
+{% endschema %}

@@ -1,0 +1,69 @@
+{%- assign collection = section.settings.collection -%}
+<section class="qtz qtz-kits" id="kits">
+  <div class="qtz-wrap">
+    <div class="qtz-kits__layout">
+      <div class="qtz-kits__aside">
+        {%- if section.settings.eyebrow != blank -%}<p class="qtz-eyebrow" style="margin:0">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        <h2 class="qtz-h2">{{ section.settings.title }}</h2>
+        {%- if section.settings.text != blank -%}<p class="qtz-lead">{{ section.settings.text }}</p>{%- endif -%}
+        {%- if section.blocks.size > 0 -%}
+          <div class="qtz-ladder">
+            <div class="qtz-card__kicker">Preço por garrafa</div>
+            {%- for block in section.blocks -%}
+              <div class="qtz-ladder__row" {{ block.shopify_attributes }}><span>{{ block.settings.label }}</span><div class="qtz-ladder__bar"><i style="width: {{ block.settings.width }}%; background: {{ block.settings.color }}"></i></div><b>{{ block.settings.value }}</b></div>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="qtz-grid">
+        {%- if collection != blank -%}
+          {%- for product in collection.products limit: section.settings.limit -%}
+          {%- assign v = product.selected_or_first_available_variant -%}
+          {%- assign bg = product.metafields.custom.cor_card.value | default: '#ffffff' -%}
+          <article class="qtz-card">
+            <a href="{{ product.url }}" class="qtz-card__media" style="background: {{ bg }}">
+              {%- if product.featured_image -%}{{ product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300,450,600', sizes: '(min-width: 1000px) 25vw, 50vw', alt: product.title }}{%- endif -%}
+              {%- if v.compare_at_price > v.price -%}<span class="qtz-card__save">-{{ v.compare_at_price | minus: v.price | times: 100 | divided_by: v.compare_at_price }}%</span>{%- endif -%}
+            </a>
+            <div class="qtz-card__body">
+              <h3 class="qtz-card__title" style="font-size:19px">{{ product.metafields.custom.frutas | default: product.title }}</h3>
+              {%- if product.metafields.custom.perfil_sabor != blank -%}<div class="qtz-card__desc">{{ product.metafields.custom.perfil_sabor }}</div>{%- endif -%}
+              <div class="qtz-card__price">
+                <b>{{ v.price | money }}</b>
+                {%- assign n = product.metafields.custom.garrafas.value -%}
+                {%- if n and n > 0 -%}<span class="qtz-card__unit">{{ v.price | divided_by: n | money }}/garrafa</span>
+                {%- elsif v.unit_price -%}<span class="qtz-card__unit">{{ v.unit_price | money }}/garrafa</span>{%- endif -%}
+              </div>
+              {%- form 'product', product -%}
+                <input type="hidden" name="id" value="{{ v.id }}">
+                <button type="submit" class="qtz-btn qtz-btn--solid qtz-btn--sm qtz-btn--full" {% unless v.available %}disabled{% endunless %}>{% if v.available %}Adicionar kit{% else %}Esgotado{% endif %}</button>
+              {%- endform -%}
+            </div>
+          </article>
+        {%- endfor -%}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Kits Quetzalli",
+  "settings": [
+    {"type":"text","id":"eyebrow","label":"Sobretítulo","default":"Kits & presentes"},
+    {"type":"text","id":"title","label":"Título","default":"Quanto mais garrafa, menos você paga por ela."},
+    {"type":"textarea","id":"text","label":"Texto","default":"Todo kit passa dos R$ 159 — frete grátis pro Brasil inteiro. E chega numa caixa que dá pra presentear sem embrulho."},
+    {"type":"collection","id":"collection","label":"Coleção de kits"},
+    {"type":"range","id":"limit","label":"Quantidade","min":2,"max":8,"step":1,"default":4}
+  ],
+  "blocks":[{"type":"row","name":"Linha (preço/garrafa)","limit":4,"settings":[
+    {"type":"text","id":"label","label":"Rótulo","default":"Avulsa"},
+    {"type":"text","id":"value","label":"Valor","default":"R$ 64,90"},
+    {"type":"range","id":"width","label":"Largura da barra (%)","min":10,"max":100,"step":1,"default":100},
+    {"type":"color","id":"color","label":"Cor","default":"#e39725"}]}],
+  "presets":[{"name":"Kits Quetzalli","blocks":[
+    {"type":"row","settings":{"label":"Avulsa","value":"R$ 64,90","width":100,"color":"#b3b3b3"}},
+    {"type":"row","settings":{"label":"Quarteto","value":"R$ 56,23","width":87,"color":"#eec17c"}},
+    {"type":"row","settings":{"label":"Trio","value":"R$ 51,63","width":80,"color":"#e39725"}}]}]
+}
+{% endschema %}

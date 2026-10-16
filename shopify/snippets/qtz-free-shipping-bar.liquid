@@ -1,0 +1,29 @@
+{%- comment -%} Uso: {% render 'qtz-free-shipping-bar', threshold: 159 %} {%- endcomment -%}
+{%- assign t = threshold | default: 159 | times: 100 -%}
+{%- assign left = t | minus: cart.total_price -%}
+{%- assign pct = cart.total_price | times: 100 | divided_by: t -%}{%- if pct > 100 -%}{%- assign pct = 100 -%}{%- endif -%}
+<div class="qtz qtz-ship" data-qtz-ship data-threshold="{{ t }}">
+  <span class="qtz-ship__msg" data-qtz-ship-msg>
+    {%- if cart.total_price == 0 -%}Frete grátis a partir de {{ t | money_without_trailing_zeros }}
+    {%- elsif left <= 0 -%}Frete grátis liberado.
+    {%- else -%}Faltam {{ left | money }} pro frete grátis{%- endif -%}
+  </span>
+  <div class="qtz-ship__track"><div class="qtz-ship__fill" data-qtz-ship-fill style="width: {{ pct }}%"></div></div>
+</div>
+<script>
+(function(){
+  if(window.__qtzShip) return; window.__qtzShip=true;
+  var fmt=function(c){return 'R$ '+(c/100).toFixed(2).replace('.',',');};
+  function render(total){
+    document.querySelectorAll('[data-qtz-ship]').forEach(function(el){
+      var t=+el.dataset.threshold,left=t-total,pct=Math.min(100,total/t*100);
+      el.querySelector('[data-qtz-ship-fill]').style.width=pct+'%';
+      el.querySelector('[data-qtz-ship-msg]').textContent= total===0?'Frete grátis a partir de '+fmt(t):(left<=0?'Frete grátis liberado.':'Faltam '+fmt(left)+' pro frete grátis');
+    });
+  }
+  function refresh(){fetch('/cart.js').then(function(r){return r.json()}).then(function(c){render(c.total_price)}).catch(function(){});}
+  // Atualiza após qualquer chamada de carrinho feita pelo tema (Palo Alto usa fetch na gaveta do carrinho)
+  var f=window.fetch;window.fetch=function(){var u=String(arguments[0]&&arguments[0].url||arguments[0]);var p=f.apply(this,arguments);if(/\/cart\/(add|change|update|clear)/.test(u)){p.then(function(){setTimeout(refresh,150)});}return p;};
+  ['theme:cart:change','cart:refresh','cart:updated'].forEach(function(e){document.addEventListener(e,refresh)});
+})();
+</script>
