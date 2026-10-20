@@ -1,0 +1,130 @@
+<title>Matriz Complexidade × Tempo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: cabeçalho curto, matriz 5×5 (eixo X = complexidade, eixo Y = tempo) e ranking em tabela ao lado/abaixo */
+:root {
+  --bg: #f6f7f4; --surface: #ffffff; --fg: #1f2a24; --muted: #5d6b63; --line: #d9dfd9;
+  --op: #2f6f5e; --func: #b5651d; --lixo: #6a5acd;
+  --h1: #e6f2ea; --h2: #f3f0dc; --h3: #f6e3d2; --h4: #f2d3cf;
+  --display: "Fraunces", Georgia, serif; --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141a17; --surface: #1c2420; --fg: #e8eee9; --muted: #9aa8a0; --line: #2e3a34;
+  --op: #6cc4a8; --func: #e7a464; --lixo: #a79bf0;
+  --h1: #1e3328; --h2: #33321f; --h3: #3b2a1e; --h4: #3e2224; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141a17; --surface: #1c2420; --fg: #e8eee9; --muted: #9aa8a0; --line: #2e3a34;
+  --op: #6cc4a8; --func: #e7a464; --lixo: #a79bf0;
+  --h1: #1e3328; --h2: #33321f; --h3: #3b2a1e; --h4: #3e2224; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-family: var(--display); font-weight: 600; font-size: 2rem; margin: 0 0 6px; text-wrap: balance; }
+.lead { color: var(--muted); margin: 0 0 20px; max-width: 65ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 20px; font-size: .9rem; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 14px; }
+.matrix-scroll { overflow-x: auto; }
+.matrix { display: grid; grid-template-columns: 34px 28px repeat(5, minmax(96px, 1fr)); grid-template-rows: repeat(5, minmax(92px, auto)) 28px 30px; min-width: 560px; }
+.ylab { grid-column: 1; grid-row: 1 / 6; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; font-weight: 700; font-size: .85rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.xlab { grid-column: 3 / 8; grid-row: 7; text-align: center; font-weight: 700; font-size: .85rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; align-self: end; }
+.tick { display: flex; align-items: center; justify-content: center; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cell { border: 1px solid var(--bg); padding: 6px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.cell .sc { position: absolute; right: 6px; bottom: 4px; font-size: .7rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.h1 { background: var(--h1); } .h2 { background: var(--h2); } .h3 { background: var(--h3); } .h4 { background: var(--h4); }
+.chip { background: var(--surface); border-left: 3px solid var(--c); border-radius: 4px; padding: 3px 6px; font-size: .78rem; line-height: 1.25; box-shadow: 0 1px 0 var(--line); }
+.q { position: absolute; top: 4px; left: 6px; font-size: .66rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; }
+.cell.has-q { padding-top: 20px; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+td.n { text-align: center; font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .74rem; font-weight: 600; white-space: nowrap; }
+.tag { color: var(--c); font-weight: 600; font-size: .82rem; }
+.notes { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.notes div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; font-size: .9rem; }
+.notes b { display: block; margin-bottom: 4px; }
+</style>
+
+<div class="wrap">
+  <h1>Matriz de Priorização: Complexidade × Tempo</h1>
+  <p class="lead">11 frentes avaliadas em escala de 1 (baixo) a 5 (alto). A pontuação é a soma de complexidade e tempo: quanto menor, mais rápida e simples a entrega.</p>
+  <div class="legend" id="legend"></div>
+
+  <div class="grid2">
+    <section class="panel">
+      <h2>Matriz</h2>
+      <div class="matrix-scroll"><div class="matrix" id="matrix"></div></div>
+    </section>
+    <section class="panel">
+      <h2>Ranking por pontuação</h2>
+      <div style="overflow-x:auto"><table id="rank"></table></div>
+    </section>
+  </div>
+
+  <div class="notes">
+    <div><b>Ganhos rápidos (pontuação 4–5)</b>Reformas estruturais, Contratação RT, Planejamento financeiro, 3º tratador e Constituição do Instituto. Dá para iniciar já, em paralelo.</div>
+    <div><b>Esforço moderado (6–7)</b>Atendimento emergencial e Comunicação interna. Pedem um responsável definido e cronograma curto.</div>
+    <div><b>Projetos estruturantes (8–10)</b>Capacitação "Vitória", Gestão de Dados (Cavalos), Implementação de processos e Gestão de Resíduos. Quebrar em etapas e acompanhar mensalmente.</div>
+  </div>
+</div>
+
+<script>
+const CATS = { "Operação": "var(--op)", "Funcionários": "var(--func)", "Lixos": "var(--lixo)" };
+const ITEMS = [
+  ["Operação", "Processo de reformas estruturais", 2, 2],
+  ["Operação", "Contratação RT", 3, 2],
+  ["Operação", "Planejamento financeiro", 2, 3],
+  ["Funcionários", "Contratação de 3º tratador", 2, 3],
+  ["Operação", "Constituição do Instituto", 2, 3],
+  ["Operação", "Processo de Atendimento emergencial", 3, 3],
+  ["Funcionários", "Processo de Comunicação Interna", 4, 3],
+  ["Funcionários", "Capacitação \"Vitória\"", 4, 4],
+  ["Operação", "Gestão de Dados (Cavalos)", 4, 5],
+  ["Operação", "Implementação de processos (Geral)", 5, 5],
+  ["Lixos", "Gestão de Resíduos", 5, 5],
+].map(([cat, name, c, t]) => ({ cat, name, c, t, s: c + t }));
+
+const heat = s => s <= 5 ? "h1" : s <= 7 ? "h2" : s <= 8 ? "h3" : "h4";
+const band = s => s <= 5 ? ["Ganho rápido", "h1"] : s <= 7 ? ["Moderado", "h2"] : ["Estruturante", "h4"];
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+document.getElementById("legend").innerHTML = Object.entries(CATS)
+  .map(([k, v]) => `<span><i class="dot" style="background:${v}"></i>${k}</span>`).join("") +
+  `<span><i class="dot" style="background:var(--h1);outline:1px solid var(--line)"></i>Pontuação 2–5</span>
+   <span><i class="dot" style="background:var(--h2);outline:1px solid var(--line)"></i>6–7</span>
+   <span><i class="dot" style="background:var(--h3);outline:1px solid var(--line)"></i>8</span>
+   <span><i class="dot" style="background:var(--h4);outline:1px solid var(--line)"></i>9–10</span>`;
+
+const QUAD = { "1,1": "Ganhos rápidos", "5,5": "Estruturantes" };
+const m = document.getElementById("matrix");
+let html = `<div class="ylab">Tempo →</div><div class="xlab">Complexidade →</div>`;
+for (let t = 5; t >= 1; t--) {
+  const row = 6 - t;
+  html += `<div class="tick" style="grid-column:2;grid-row:${row}">${t}</div>`;
+  for (let c = 1; c <= 5; c++) {
+    const s = c + t, q = QUAD[`${c},${t}`];
+    const chips = ITEMS.filter(i => i.c === c && i.t === t)
+      .map(i => `<div class="chip" style="--c:${CATS[i.cat]}">${esc(i.name)}</div>`).join("");
+    html += `<div class="cell ${heat(s)}${q ? " has-q" : ""}" style="grid-column:${c + 2};grid-row:${row}">
+      ${q ? `<span class="q">${q}</span>` : ""}${chips}<span class="sc">${s}</span></div>`;
+  }
+}
+for (let c = 1; c <= 5; c++) html += `<div class="tick" style="grid-column:${c + 2};grid-row:6">${c}</div>`;
+m.innerHTML = html;
+
+const sorted = [...ITEMS].sort((a, b) => a.s - b.s || a.c - b.c);
+document.getElementById("rank").innerHTML =
+  `<thead><tr><th>#</th><th>Frente</th><th>Compl.</th><th>Tempo</th><th>Total</th><th>Faixa</th></tr></thead><tbody>` +
+  sorted.map((i, k) => { const [lbl, cls] = band(i.s); return `<tr>
+    <td class="n">${k + 1}</td>
+    <td>${esc(i.name)}<br><span class="tag" style="--c:${CATS[i.cat]}">${i.cat}</span></td>
+    <td class="n">${i.c}</td><td class="n">${i.t}</td><td class="n"><b>${i.s}</b></td>
+    <td><span class="pill ${cls}">${lbl}</span></td></tr>`; }).join("") + `</tbody>`;
+</script>
