@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Votação no Exterior · 2º turno 2026</title>
+<meta name="description" content="Acompanhamento da apuração dos votos de brasileiros no exterior no 2º turno da eleição presidencial de 2026 (Lula x Flávio Bolsonaro), comparado com o 1º turno.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<style>
+  :root {
+    --lula: #C62828;
+    --flavio: #1565C0;
+    --pendente: #9E9E9E;
+
+    --bg: #F6F7F9;
+    --surface: #FFFFFF;
+    --surface-2: #F0F2F5;
+    --text: #15181D;
+    --text-2: #545B66;
+    --text-3: #7A818C;
+    --border: #E2E5EA;
+    --grid: #E8EBEF;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+    --lula-soft: rgba(198,40,40,.12);
+    --flavio-soft: rgba(21,101,192,.12);
+    --focus: #1565C0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1115;
+      --surface: #171A20;
+      --surface-2: #1F232B;
+      --text: #ECEEF2;
+      --text-2: #A8AFBA;
+      --text-3: #808894;
+      --border: #2A2F38;
+      --grid: #242932;
+      --shadow: none;
+      --lula-soft: rgba(198,40,40,.22);
+      --flavio-soft: rgba(21,101,192,.26);
+      --focus: #64A0E8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1115;
+    --surface: #171A20;
+    --surface-2: #1F232B;
+    --text: #ECEEF2;
+    --text-2: #A8AFBA;
+    --text-3: #808894;
+    --border: #2A2F38;
+    --grid: #242932;
+    --shadow: none;
+    --lula-soft: rgba(198,40,40,.22);
+    --flavio-soft: rgba(21,101,192,.26);
+    --focus: #64A0E8;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-x: hidden;
+    font-variant-numeric: tabular-nums;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  header.top {
+    display: flex; gap: 16px; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); margin: 0 0 4px; }
+  h1 { font-size: clamp(22px, 3.2vw, 30px); line-height: 1.2; margin: 0 0 6px; font-weight: 800; letter-spacing: -.01em; }
+  .sub { color: var(--text-2); margin: 0; max-width: 70ch; }
+  .status {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 10px;
+    font-size: 13px; color: var(--text-2);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px;
+  }
+  .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #E0A100; box-shadow: 0 0 0 3px rgba(224,161,0,.2); }
+
+  button.theme {
+    flex: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 12px; font: inherit; font-size: 14px; cursor: pointer;
+  }
+  button.theme:hover { background: var(--surface-2); }
+  button:focus-visible, select:focus-visible, input:focus-visible, th:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 18px; min-width: 0;
+  }
+  .card h2 { font-size: 16px; margin: 0 0 4px; font-weight: 700; }
+  .card .desc { font-size: 13px; color: var(--text-2); margin: 0 0 14px; }
+
+  /* Placar principal */
+  .hero { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+  .score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 12px; }
+  .cand .nome { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .cand .partido { font-weight: 500; color: var(--text-3); font-size: 13px; }
+  .cand .pct { font-size: clamp(32px, 6vw, 48px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+  .cand .votos { color: var(--text-2); font-size: 14px; }
+  .cand.right { text-align: right; }
+  .cand.right .nome { justify-content: flex-end; }
+  .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+  .vs { color: var(--text-3); font-weight: 600; font-size: 13px; padding-bottom: 10px; }
+  .split { position: relative; height: 14px; border-radius: 7px; overflow: hidden; display: flex; margin: 14px 0 6px; background: var(--surface-2); }
+  .split > div { height: 100%; }
+  .split .mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--surface); }
+  .split-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-3); }
+  .hero-note { margin-top: 12px; font-size: 13px; color: var(--text-2); }
+  .hero-note strong { color: var(--text); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .kpi .label { font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+  .kpi .value { font-size: 26px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; }
+  .kpi .meta { font-size: 12.5px; color: var(--text-3); margin-top: 4px; }
+  .meter { height: 6px; border-radius: 3px; background: var(--surface-2); margin-top: 10px; overflow: hidden; }
+  .meter > div { height: 100%; background: var(--text-2); border-radius: 3px; }
+
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--text-2); margin: -4px 0 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .lg-hollow { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--text-3); display: inline-block; }
+  .lg-solid { width: 10px; height: 10px; border-radius: 50%; background: var(--text-2); display: inline-block; }
+  .lg-bar-light { width: 14px; height: 8px; border-radius: 2px; background: var(--text-3); opacity: .35; display: inline-block; }
+  .lg-bar { width: 14px; height: 8px; border-radius: 2px; background: var(--text-2); display: inline-block; }
+
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { fill: var(--text-2); font-family: inherit; font-size: 12px; }
+  .chart .lbl { fill: var(--text); font-weight: 500; }
+  .chart .axis path { display: none; }
+  .chart .axis line { stroke: var(--grid); }
+  .chart .axis text { fill: var(--text-3); font-size: 11px; }
+  .chart .zero { stroke: var(--text-3); stroke-width: 1; }
+  .chart .row-hit { fill: transparent; }
+  .chart .row-hit:hover { fill: var(--surface-2); }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+  .seg button { background: var(--surface); color: var(--text-2); border: 0; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--border); }
+  .seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); font-weight: 600; }
+  select, input[type="search"] {
+    font: inherit; font-size: 14px; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 9px; padding: 7px 10px; min-width: 0;
+  }
+  input[type="search"] { flex: 1 1 180px; }
+
+  /* Tabela */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -18px; padding: 0 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 760px; }
+  th, td { padding: 9px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: 12px; font-weight: 600; color: var(--text-2); cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--surface); }
+  th[aria-sort="ascending"]::after { content: " ▲"; font-size: 9px; }
+  th[aria-sort="descending"]::after { content: " ▼"; font-size: 9px; }
+  th.grp { cursor: default; text-align: center; color: var(--text-3); border-bottom: 0; padding-bottom: 0; font-weight: 500; }
+  tbody tr:hover td { background: var(--surface-2); }
+  td .pais { font-weight: 600; }
+  td .regiao { display: block; font-size: 11.5px; color: var(--text-3); }
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+  .pill.ok { background: var(--surface-2); color: var(--text); }
+  .pill.wait { background: transparent; color: var(--text-3); border: 1px dashed var(--pendente); }
+  .mini { display: inline-flex; width: 64px; height: 8px; border-radius: 4px; overflow: hidden; vertical-align: middle; margin-left: 8px; background: var(--surface-2); }
+  .mini > i { display: block; height: 100%; }
+  .delta { font-weight: 600; }
+  .muted { color: var(--text-3); }
+  tfoot td { font-weight: 600; border-bottom: 0; border-top: 2px solid var(--border); }
+  tfoot tr.resid td { font-weight: 400; color: var(--text-3); border-top: 0; border-bottom: 1px solid var(--border); }
+
+  .regions { display: grid; gap: 10px; }
+  .reg-row { display: grid; grid-template-columns: minmax(110px, 160px) 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+  .reg-row .nm { font-weight: 600; }
+  .reg-row .nm small { display: block; font-weight: 400; color: var(--text-3); font-size: 11.5px; }
+  .reg-bar { position: relative; height: 12px; border-radius: 6px; overflow: hidden; display: flex; background: var(--surface-2); }
+  .reg-bar .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--surface); }
+  .reg-row .v { font-size: 12px; color: var(--text-2); text-align: right; min-width: 92px; }
+
+  .notes { font-size: 12.5px; color: var(--text-3); margin-top: 20px; }
+  .notes ul { margin: 6px 0 0; padding-left: 18px; }
+  .notes li { margin: 3px 0; }
+
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 10; opacity: 0;
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45;
+    box-shadow: 0 6px 20px rgba(0,0,0,.14); max-width: 260px; transition: opacity .1s;
+  }
+  .tooltip .t { font-weight: 700; margin-bottom: 4px; }
+  .tooltip .r { display: flex; justify-content: space-between; gap: 14px; }
+  .tooltip .r span:first-child { color: var(--text-2); }
+
+  .empty { color: var(--text-3); font-size: 13px; padding: 16px 0; text-align: center; }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid2 { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 520px) {
+    .wrap { padding-top: 16px; }
+    header.top { flex-direction: column-reverse; gap: 10px; }
+    button.theme { align-self: flex-end; }
+    .kpis { gap: 10px; }
+    .kpi .value { font-size: 22px; }
+    .card { padding: 14px; }
+    .table-wrap { margin: 0 -14px; padding: 0 14px; }
+    .reg-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .sobrenome { display: none; }
+    .reg-row .reg-bar { grid-column: 1 / -1; grid-row: 2; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Eleição presidencial 2026 · Brasileiros no exterior</p>
+      <h1>2º turno: Lula x Flávio Bolsonaro fora do Brasil</h1>
+      <p class="sub">Apuração parcial do 2º turno por país, comparada com o resultado final do 1º turno.</p>
+      <div class="status"><span class="dot-live" aria-hidden="true"></span><span id="status-text">Parcial</span></div>
+    </div>
+    <button class="theme" id="theme-btn" type="button" aria-label="Alternar tema claro/escuro">
+      <span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Tema</span>
+    </button>
+  </header>
+
+  <section class="card hero" aria-labelledby="placar-titulo">
+    <div>
+      <h2 id="placar-titulo">Placar parcial do 2º turno no exterior</h2>
+      <p class="desc">Percentual dos votos válidos nos países já apurados.</p>
+      <div class="score">
+        <div class="cand">
+          <div class="nome"><span class="sw" style="background:var(--lula)"></span>Lula <span class="partido">PT</span></div>
+          <div class="pct" id="h-lula-pct" style="color:var(--lula)">–</div>
+          <div class="votos" id="h-lula-v">–</div>
+        </div>
+        <div class="vs">x</div>
+        <div class="cand right">
+          <div class="nome">Flávio<span class="sobrenome"> Bolsonaro</span> <span class="partido">PL</span><span class="sw" style="background:var(--flavio)"></span></div>
+          <div class="pct" id="h-flavio-pct" style="color:var(--flavio)">–</div>
+          <div class="votos" id="h-flavio-v">–</div>
+        </div>
+      </div>
+      <div class="split" id="h-split" role="img" aria-label=""></div>
+      <div class="split-legend"><span>Lula</span><span>50%</span><span>Flávio</span></div>
+      <p class="hero-note" id="h-note"></p>
+    </div>
+  </section>
+
+  <section class="kpis" aria-label="Indicadores">
+    <div class="card kpi">
+      <div class="label">Países apurados</div>
+      <div class="value" id="k-paises">–</div>
+      <div class="meter"><div id="k-paises-bar" style="width:0"></div></div>
+      <div class="meta" id="k-paises-meta"></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Variação de Lula nos mesmos países</div>
+      <div class="value" id="k-swing">–</div>
+      <div class="meta" id="k-swing-meta"></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Comparecimento (países apurados)</div>
+      <div class="value" id="k-comp">–</div>
+      <div class="meter"><div id="k-comp-bar" style="width:0"></div></div>
+      <div class="meta" id="k-comp-meta"></div>
+    </div>
+    <div class="card kpi">
+      <div class="label">1º turno no exterior (final)</div>
+      <div class="value" id="k-1t">–</div>
+      <div class="meta" id="k-1t-meta"></div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>Lula no 1º e no 2º turno, por país apurado</h2>
+      <p class="desc">Fatia de Lula nos votos dados a Lula e Flávio. A linha central marca 50%.</p>
+      <div class="legend">
+        <span><i class="lg-hollow"></i>1º turno</span>
+        <span><i class="lg-solid"></i>2º turno (cor do vencedor)</span>
+      </div>
+      <div class="chart" id="dumbbell"></div>
+    </div>
+    <div class="card">
+      <h2>Por região</h2>
+      <p class="desc" id="reg-desc">Percentual de Lula entre Lula e Flávio.</p>
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Turno exibido por região">
+          <button type="button" data-reg="1t" aria-pressed="true">1º turno</button>
+          <button type="button" data-reg="2t" aria-pressed="false">2º turno (parcial)</button>
+        </div>
+      </div>
+      <div class="regions" id="regions"></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Vantagem em votos por país</h2>
+    <p class="desc">Diferença entre Lula e Flávio. À esquerda, vantagem de Lula; à direita, de Flávio. Barra clara = 1º turno; barra cheia = 2º turno.</p>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Quantidade de países">
+        <button type="button" data-top="20" aria-pressed="true">20 maiores</button>
+        <button type="button" data-top="all" aria-pressed="false">Todos</button>
+        <button type="button" data-top="2t" aria-pressed="false">Só apurados</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="lg-bar-light"></i>1º turno</span>
+      <span><i class="lg-bar"></i>2º turno</span>
+      <span><i class="sw" style="background:var(--lula)"></i>Lula à frente</span>
+      <span><i class="sw" style="background:var(--flavio)"></i>Flávio à frente</span>
+      <span><i class="sw" style="background:var(--pendente)"></i>Sem resultado</span>
+    </div>
+    <div class="chart" id="margins"></div>
+  </section>
+
+  <section class="card">
+    <h2>Todos os países</h2>
+    <p class="desc">Clique no cabeçalho para ordenar. "Δ Lula" é a variação, em pontos percentuais, da fatia de Lula entre os turnos.</p>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Buscar país…" aria-label="Buscar país">
+      <select id="f-regiao" aria-label="Filtrar por região"><option value="">Todas as regiões</option></select>
+      <select id="f-status" aria-label="Filtrar por situação">
+        <option value="">Todas as situações</option>
+        <option value="ok">Apurado no 2º turno</option>
+        <option value="wait">Aguardando</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table id="tabela">
+        <thead>
+          <tr>
+            <th class="grp"></th>
+            <th class="grp" colspan="2">1º turno</th>
+            <th class="grp" colspan="3">2º turno</th>
+            <th class="grp" colspan="2"></th>
+          </tr>
+          <tr>
+            <th data-k="pais" tabindex="0">País</th>
+            <th data-k="tot1" tabindex="0">Votos L+F</th>
+            <th data-k="p1" tabindex="0">% Lula</th>
+            <th data-k="tot2" tabindex="0">Votos L+F</th>
+            <th data-k="p2" tabindex="0">% Lula</th>
+            <th data-k="comp" tabindex="0">Compar.</th>
+            <th data-k="delta" tabindex="0">Δ Lula</th>
+            <th data-k="status" tabindex="0">Situação</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <div class="notes">
+    <strong>Notas</strong>
+    <ul id="notas">
+      <li>1º turno: resultado final. Os totais oficiais do TSE no exterior são Lula 157.387 x Flávio 143.900; a diferença entre esse total e a soma dos países listados aparece na tabela como "Demais países (não listados)".</li>
+      <li>2º turno: apuração parcial, atualizada até cerca de 10h40 de 25/10/2026. Países sem resultado aparecem em cinza.</li>
+      <li>"China (c/ Hong Kong)" soma China continental e Hong Kong, que no 1º turno vieram juntos.</li>
+      <li>Índia no 2º turno: 1 de 2 urnas apuradas.</li>
+      <li>Percentuais calculados apenas sobre os votos de Lula e Flávio. Comparecimento = eleitores que compareceram ÷ aptos.</li>
+    </ul>
+  </div>
+</div>
+<div class="tooltip" id="tt" role="tooltip"></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Dados — pais;regiao;lula_1t;flavio_1t;lula_2t;flavio_2t;aptos_2t;comparecimento_2t
+// Campo vazio = ainda não apurado ou não disponível.
+// ---------------------------------------------------------------------------
+const CSV = `pais;regiao;lula_1t;flavio_1t;lula_2t;flavio_2t;aptos_2t;comparecimento_2t
+Estados Unidos;América do Norte;23335;45004;;;;
+Portugal;Europa;26401;19412;;;;
+Japão;Ásia;5234;24601;7098;28538;88299;37616
+Canadá;América do Norte;12508;7043;;;;
+Alemanha;Europa;13525;3532;;;;
+Reino Unido;Europa;8640;5366;;;;
+Espanha;Europa;7263;3338;;;;
+Itália;Europa;6148;4386;;;;
+França;Europa;8769;1758;;;;
+Suíça;Europa;5194;4525;;;;
+Irlanda;Europa;6025;1559;;;;
+Austrália;Oceania;4562;2579;6017;3465;20280;9795
+Países Baixos;Europa;4624;1081;;;;
+Argentina;América do Sul;3747;1681;;;;
+Bélgica;Europa;2516;1959;;;;
+Paraguai;América do Sul;546;3848;;;;
+Líbano;Oriente Médio;2538;1138;;;;
+Suécia;Europa;1770;505;;;;
+Chile;América do Sul;928;809;;;;
+Bolívia;América do Sul;349;1387;;;;
+Uruguai;América do Sul;797;701;;;;
+Dinamarca;Europa;1166;195;;;;
+Áustria;Europa;979;311;;;;
+México;América do Norte;585;589;;;;
+Emirados Árabes;Oriente Médio;512;659;643;772;2988;1465
+Palestina;Oriente Médio;1078;46;;;;
+Guiana Francesa;América do Sul;484;518;;;;
+Noruega;Europa;592;198;;;;
+Jordânia;Oriente Médio;675;59;;;;
+Finlândia;Europa;475;155;;;;
+Peru;América do Sul;248;380;;;;
+Israel;Oriente Médio;92;523;;;;
+Panamá;América Central e Caribe;236;336;;;;
+China (c/ Hong Kong);Ásia;367;203;502;267;2171;810
+Colômbia;América do Sul;245;252;;;;
+Suriname;América do Sul;121;366;;;;
+Grécia;Europa;196;230;;;;
+Hungria;Europa;331;93;;;;
+África do Sul;África;152;230;;;;
+Tchéquia;Europa;279;70;;;;
+Costa Rica;América Central e Caribe;173;159;;;;
+Catar;Oriente Médio;147;173;;;;
+Equador;América do Sul;130;171;;;;
+Nova Zelândia;Oceania;234;64;418;101;3119;526
+Singapura;Ásia;190;92;213;121;864;354
+Venezuela;América do Sul;128;125;;;;
+Angola;África;147;101;;;;
+Polônia;Europa;183;65;;;;
+Moçambique;África;89;113;;;;
+Coreia do Sul;Ásia;123;72;148;82;485;238
+Taiwan;Ásia;77;107;94;130;622;239
+República Dominicana;América Central e Caribe;65;106;;;;
+Estônia;Europa;142;19;;;;
+Turquia;Oriente Médio;114;37;;;;
+Síria;Oriente Médio;97;7`;
+
+const ATUALIZACAO = "Parcial do 2º turno · atualizado até ~10h40 de 25/10/2026";
+// Totais oficiais do TSE no exterior, 1º turno (final).
+const OFICIAL_1T = { lula: 157387, flavio: 143900 };
+
+// ---------------------------------------------------------------------------
+// Utilidades
+// ---------------------------------------------------------------------------
+const nfmt = new Intl.NumberFormat("pt-BR");
+const fInt = v => v == null ? "–" : nfmt.format(Math.round(v));
+const fPct = (v, d = 1) => v == null ? "–" : (v * 100).toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
+const fPP = v => v == null ? "–" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " p.p.";
+const num = s => (s == null || String(s).trim() === "") ? null : +String(s).trim();
+const share = (l, f) => (l == null || f == null || l + f === 0) ? null : l / (l + f);
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const COR = { lula: "#C62828", flavio: "#1565C0", pend: "#9E9E9E" };
+const corVencedor = (l, f) => (l == null || f == null) ? COR.pend : (l >= f ? COR.lula : COR.flavio);
+
+const dados = d3.dsvFormat(";").parse(CSV, r => {
+  const o = {
+    pais: r.pais.trim(),
+    regiao: (r.regiao || "").trim(),
+    l1: num(r.lula_1t), f1: num(r.flavio_1t),
+    l2: num(r.lula_2t), f2: num(r.flavio_2t),
+    aptos: num(r.aptos_2t), comp: num(r.comparecimento_2t),
+  };
+  o.tem2 = o.l2 != null && o.f2 != null;
+  o.tot1 = (o.l1 ?? 0) + (o.f1 ?? 0);
+  o.tot2 = o.tem2 ? o.l2 + o.f2 : null;
+  o.p1 = share(o.l1, o.f1);
+  o.p2 = o.tem2 ? share(o.l2, o.f2) : null;
+  o.delta = (o.p1 != null && o.p2 != null) ? o.p2 - o.p1 : null;
+  o.compPct = (o.aptos && o.comp != null) ? o.comp / o.aptos : null;
+  o.m1 = (o.l1 ?? 0) - (o.f1 ?? 0);
+  o.m2 = o.tem2 ? o.l2 - o.f2 : null;
+  return o;
+});
+
+const apurados = dados.filter(d => d.tem2);
+const soma = (arr, k) => d3.sum(arr, d => d[k] ?? 0);
+
+// ---------------------------------------------------------------------------
+// Tooltip
+// ---------------------------------------------------------------------------
+const tt = document.getElementById("tt");
+function showTT(ev, d) {
+  const linhas = [
+    ["1º turno", `${fInt(d.l1)} x ${fInt(d.f1)}`],
+    ["% Lula 1º t.", fPct(d.p1)],
+  ];
+  if (d.tem2) {
+    linhas.push(["2º turno", `${fInt(d.l2)} x ${fInt(d.f2)}`]);
+    linhas.push(["% Lula 2º t.", fPct(d.p2)]);
+    linhas.push(["Variação", fPP(d.delta)]);
+    if (d.compPct != null) linhas.push(["Comparecimento", fPct(d.compPct)]);
+  } else {
+    linhas.push(["2º turno", "aguardando"]);
+  }
+  tt.innerHTML = `<div class="t">${d.pais}</div><div class="muted" style="margin-bottom:4px">${d.regiao}</div>` +
+    linhas.map(([a, b]) => `<div class="r"><span>${a}</span><span>${b}</span></div>`).join("");
+  moveTT(ev);
+  tt.style.opacity = 1;
+}
+function moveTT(ev) {
+  const pad = 14, w = tt.offsetWidth, h = tt.offsetHeight;
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + w > window.innerWidth - 8) x = ev.clientX - w - pad;
+  if (y + h > window.innerHeight - 8) y = ev.clientY - h - pad;
+  tt.style.left = Math.max(8, x) + "px";
+  tt.style.top = Math.max(8, y) + "px";
+}
+function hideTT() { tt.style.opacity = 0; }
+
+// ---------------------------------------------------------------------------
+// Tema
+// ---------------------------------------------------------------------------
+const root = document.documentElement;
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+function temaAtual() { return root.dataset.theme || (mq.matches ? "dark" : "light"); }
+function atualizaBotaoTema() {
+  const escuro = temaAtual() === "dark";
+  document.getElementById("theme-label").textContent = escuro ? "Tema claro" : "Tema escuro";
+  document.getElementById("theme-icon").textContent = escuro ? "☀" : "☾";
+}
+try { const s = localStorage.getItem("tema-exterior-2026"); if (s === "dark" || s === "light") root.dataset.theme = s; } catch (e) {}
+document.getElementById("theme-btn").addEventListener("click", () => {
+  const novo = temaAtual() === "dark" ? "light" : "dark";
+  root.dataset.theme = novo;
+  try { localStorage.setItem("tema-exterior-2026", novo); } catch (e) {}
+  atualizaBotaoTema(); renderGraficos();
+});
+mq.addEventListener?.("change", () => { atualizaBotaoTema(); renderGraficos(); });
+atualizaBotaoTema();
+
+// ---------------------------------------------------------------------------
+// Placar e KPIs
+// ---------------------------------------------------------------------------
+function renderResumo() {
+  document.getElementById("status-text").textContent = ATUALIZACAO;
+
+  const L2 = soma(apurados, "l2"), F2 = soma(apurados, "f2"), T2 = L2 + F2;
+  const pL = T2 ? L2 / T2 : 0, pF = T2 ? F2 / T2 : 0;
+  document.getElementById("h-lula-pct").textContent = fPct(pL);
+  document.getElementById("h-flavio-pct").textContent = fPct(pF);
+  document.getElementById("h-lula-v").textContent = fInt(L2) + " votos";
+  document.getElementById("h-flavio-v").textContent = fInt(F2) + " votos";
+  const split = document.getElementById("h-split");
+  split.innerHTML = `<div style="width:${pL * 100}%;background:var(--lula)"></div><div style="width:${pF * 100}%;background:var(--flavio)"></div><span class="mid"></span>`;
+  split.setAttribute("aria-label", `Lula ${fPct(pL)}, Flávio ${fPct(pF)}`);
+  const lider = L2 >= F2 ? "Lula" : "Flávio";
+  document.getElementById("h-note").innerHTML =
+    `<strong>${lider}</strong> lidera por <strong>${fInt(Math.abs(L2 - F2))}</strong> votos em ${apurados.length} países apurados. ` +
+    `A amostra ainda é pequena e pesa muito o Japão; Estados Unidos e Portugal, os dois maiores colégios, não foram apurados.`;
+
+  // Países apurados
+  const N = dados.length;
+  document.getElementById("k-paises").textContent = `${apurados.length} de ${N}`;
+  document.getElementById("k-paises-bar").style.width = (apurados.length / N * 100) + "%";
+  const peso1 = soma(apurados, "tot1") / (OFICIAL_1T.lula + OFICIAL_1T.flavio);
+  document.getElementById("k-paises-meta").textContent = `Representavam ${fPct(peso1)} dos votos de Lula + Flávio no 1º turno`;
+
+  // Swing nos mesmos países
+  const L1a = soma(apurados, "l1"), F1a = soma(apurados, "f1");
+  const p1a = share(L1a, F1a), sw = pL - p1a;
+  const elSw = document.getElementById("k-swing");
+  elSw.textContent = fPP(sw);
+  elSw.style.color = sw >= 0 ? "var(--lula)" : "var(--flavio)";
+  const subiu = apurados.filter(d => d.delta > 0).length;
+  document.getElementById("k-swing-meta").textContent =
+    `De ${fPct(p1a)} no 1º turno para ${fPct(pL)} agora · Lula cresceu em ${subiu} de ${apurados.length} países`;
+
+  // Comparecimento
+  const comAptos = apurados.filter(d => d.aptos && d.comp != null);
+  const A = soma(comAptos, "aptos"), C = soma(comAptos, "comp");
+  document.getElementById("k-comp").textContent = A ? fPct(C / A) : "–";
+  document.getElementById("k-comp-bar").style.width = A ? (C / A * 100) + "%" : 0;
+  document.getElementById("k-comp-meta").textContent = A ? `${fInt(C)} de ${fInt(A)} eleitores aptos` : "Sem dados";
+
+  // 1º turno oficial
+  const p1o = share(OFICIAL_1T.lula, OFICIAL_1T.flavio);
+  document.getElementById("k-1t").innerHTML =
+    `<span style="color:var(--lula)">${fPct(p1o)}</span> <span class="muted" style="font-size:15px;font-weight:600">x</span> <span style="color:var(--flavio)">${fPct(1 - p1o)}</span>`;
+  document.getElementById("k-1t-meta").textContent =
+    `Lula ${fInt(OFICIAL_1T.lula)} x Flávio ${fInt(OFICIAL_1T.flavio)} · vantagem de ${fInt(OFICIAL_1T.lula - OFICIAL_1T.flavio)}`;
+}
+
+// ---------------------------------------------------------------------------
+// Gráfico: halteres 1º → 2º turno (% Lula)
+// ---------------------------------------------------------------------------
+function renderDumbbell() {
+  const el = document.getElementById("dumbbell");
+  el.innerHTML = "";
+  const rows = apurados.slice().sort((a, b) => d3.descending(a.tot2, b.tot2));
+  if (!rows.length) { el.innerHTML = `<div class="empty">Nenhum país apurado ainda.</div>`; return; }
+
+  const W = el.clientWidth || 500;
+  const estreito = W < 420;
+  const m = { top: 22, right: estreito ? 46 : 64, bottom: 8, left: estreito ? 104 : 140 };
+  const rowH = 30;
+  const H = m.top + m.bottom + rows.length * rowH;
+  const ext = d3.extent(rows.flatMap(d => [d.p1, d.p2]).concat([0.5]));
+  const pad = 0.04;
+  const x = d3.scaleLinear().domain([Math.max(0, ext[0] - pad), Math.min(1, ext[1] + pad)]).nice().range([m.left, W - m.right]);
+  const y = d3.scaleBand().domain(rows.map(d => d.pais)).range([m.top, H - m.bottom]).padding(0.2);
+
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
+    .attr("aria-label", "Percentual de Lula no 1º e 2º turno por país apurado");
+
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${m.top - 6})`)
+    .call(d3.axisTop(x).ticks(estreito ? 4 : 6).tickFormat(d => Math.round(d * 100) + "%").tickSize(-(H - m.top - m.bottom + 6)));
+
+  svg.append("line").attr("class", "zero").attr("x1", x(0.5)).attr("x2", x(0.5))
+    .attr("y1", m.top - 6).attr("y2", H - m.bottom).attr("stroke-dasharray", "3 3");
+
+  const g = svg.append("g").selectAll("g").data(rows).join("g")
+    .attr("transform", d => `translate(0,${y(d.pais) + y.bandwidth() / 2})`);
+
+  g.append("rect").attr("class", "row-hit").attr("x", 0).attr("width", W).attr("y", -rowH / 2).attr("height", rowH).attr("rx", 6)
+    .on("pointerenter", showTT).on("pointermove", moveTT).on("pointerleave", hideTT);
+  g.append("text").attr("class", "lbl").attr("x", m.left - 10).attr("dy", "0.35em").attr("text-anchor", "end")
+    .text(d => estreito && d.pais.length > 14 ? d.pais.replace(" (c/ Hong Kong)", "*") : d.pais).style("pointer-events", "none");
+  g.append("line").attr("x1", d => x(d.p1)).attr("x2", d => x(d.p2))
+    .attr("stroke", d => corVencedor(d.l2, d.f2)).attr("stroke-width", 3).attr("stroke-opacity", .45).style("pointer-events", "none");
+  g.append("circle").attr("cx", d => x(d.p1)).attr("r", 5)
+    .attr("fill", css("--surface")).attr("stroke", css("--text-3")).attr("stroke-width", 2).style("pointer-events", "none");
+  g.append("circle").attr("cx", d => x(d.p2)).attr("r", 6)
+    .attr("fill", d => corVencedor(d.l2, d.f2)).attr("stroke", css("--surface")).attr("stroke-width", 1.5).style("pointer-events", "none");
+  g.append("text").attr("x", W - m.right + 8).attr("dy", "0.35em")
+    .attr("fill", d => d.delta >= 0 ? COR.lula : COR.flavio).style("font-weight", 600).style("pointer-events", "none")
+    .text(d => (d.delta >= 0 ? "+" : "−") + Math.abs(d.delta * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 }));
+}
+
+// ---------------------------------------------------------------------------
+// Gráfico: vantagem em votos (divergente)
+// ---------------------------------------------------------------------------
+let modoTop = "20";
+function renderMargens() {
+  const el = document.getElementById("margins");
+  el.innerHTML = "";
+  let rows = dados.slice().sort((a, b) => d3.descending(Math.max(a.tot1, a.tot2 ?? 0), Math.max(b.tot1, b.tot2 ?? 0)));
+  if (modoTop === "20") rows = rows.slice(0, 20);
+  else if (modoTop === "2t") rows = rows.filter(d => d.tem2);
+
+  const W = el.clientWidth || 800;
+  const estreito = W < 520;
+  const m = { top: 40, right: 12, bottom: 8, left: estreito ? 112 : 160 };
+  const rowH = estreito ? 24 : 26;
+  const H = m.top + m.bottom + rows.length * rowH;
+  const maxAbs = d3.max(rows.flatMap(d => [Math.abs(d.m1), Math.abs(d.m2 ?? 0)])) || 1;
+  const x = d3.scaleLinear().domain([-maxAbs, maxAbs]).nice().range([m.left, W - m.right]);
+  const y = d3.scaleBand().domain(rows.map(d => d.pais)).range([m.top, H - m.bottom]).paddingInner(0.18);
+
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
+    .attr("aria-label", "Vantagem em votos de Lula ou Flávio por país, 1º e 2º turno");
+
+  const fmtEixo = d => (d === 0 ? "0" : d3.format("~s")(Math.abs(d)).replace("k", " mil"));
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${m.top - 6})`)
+    .call(d3.axisTop(x).ticks(estreito ? 4 : 8).tickFormat(fmtEixo).tickSize(-(H - m.top - m.bottom + 6)));
+  svg.append("text").attr("x", m.left).attr("y", 10).attr("font-size", 11).attr("fill", COR.lula).style("font-weight", 600).text("← Lula");
+  svg.append("text").attr("x", W - m.right).attr("y", 10).attr("text-anchor", "end").attr("font-size", 11).attr("fill", COR.flavio).style("font-weight", 600).text("Flávio →");
+
+  // Inverte o sinal: Lula (m>0) à esquerda.
+  const xs = v => x(-v);
+  const g = svg.append("g").selectAll("g").data(rows).join("g").attr("transform", d => `translate(0,${y(d.pais)})`);
+  const bh = y.bandwidth();
+
+  g.append("rect").attr("class", "row-hit").attr("x", 0).attr("width", W).attr("y", -2).attr("height", bh + 4).attr("rx", 5)
+    .on("pointerenter", showTT).on("pointermove", moveTT).on("pointerleave", hideTT);
+  g.append("text").attr("class", "lbl").attr("x", m.left - 10).attr("y", bh / 2).attr("dy", "0.35em").attr("text-anchor", "end")
+    .text(d => estreito ? d.pais.replace(" (c/ Hong Kong)", "*") : d.pais).style("pointer-events", "none");
+
+  // 1º turno: barra clara de altura total
+  g.append("rect")
+    .attr("x", d => Math.min(xs(d.m1), x(0))).attr("width", d => Math.abs(xs(d.m1) - x(0)))
+    .attr("y", 0).attr("height", bh).attr("rx", 3)
+    .attr("fill", d => d.m1 >= 0 ? COR.lula : COR.flavio).attr("fill-opacity", .22).style("pointer-events", "none");
+
+  // 2º turno: barra cheia e mais fina; cinza tracejado se ainda não apurado
+  g.filter(d => d.tem2).append("rect")
+    .attr("x", d => Math.min(xs(d.m2), x(0))).attr("width", d => Math.max(1, Math.abs(xs(d.m2) - x(0))))
+    .attr("y", bh * 0.25).attr("height", bh * 0.5).attr("rx", 2)
+    .attr("fill", d => d.m2 >= 0 ? COR.lula : COR.flavio).style("pointer-events", "none");
+  g.filter(d => !d.tem2).append("circle")
+    .attr("cx", x(0)).attr("cy", bh / 2).attr("r", 3).attr("fill", COR.pend).style("pointer-events", "none");
+
+  svg.append("line").attr("class", "zero").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.top - 6).attr("y2", H - m.bottom);
+}
+
+document.querySelectorAll("[data-top]").forEach(b => b.addEventListener("click", () => {
+  modoTop = b.dataset.top;
+  document.querySelectorAll("[data-top]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderMargens();
+}));
+
+// ---------------------------------------------------------------------------
+// Regiões
+// ---------------------------------------------------------------------------
+let modoReg = "1t";
+function renderRegioes() {
+  const el = document.getElementById("regions");
+  const grupos = d3.rollups(dados, v => {
+    const ap = v.filter(d => d.tem2);
+    return {
+      l1: soma(v, "l1"), f1: soma(v, "f1"),
+      l2: soma(ap, "l2"), f2: soma(ap, "f2"),
+      n: v.length, n2: ap.length,
+    };
+  }, d => d.regiao).map(([regiao, s]) => ({ regiao, ...s }))
+    .sort((a, b) => d3.descending(a.l1 + a.f1, b.l1 + b.f1));
+
+  document.getElementById("reg-desc").textContent = modoReg === "1t"
+    ? "Percentual de Lula entre Lula e Flávio no 1º turno (final)."
+    : "Percentual de Lula entre Lula e Flávio no 2º turno, só nos países já apurados.";
+
+  el.innerHTML = grupos.map(g => {
+    const l = modoReg === "1t" ? g.l1 : g.l2, f = modoReg === "1t" ? g.f1 : g.f2;
+    const p = share(l, f);
+    const sub = modoReg === "1t" ? `${g.n} países` : `${g.n2} de ${g.n} apurados`;
+    const bar = p == null
+      ? `<div class="reg-bar"><div style="width:100%;background:var(--pendente);opacity:.45"></div><span class="mid"></span></div>`
+      : `<div class="reg-bar"><div style="width:${p * 100}%;background:var(--lula)"></div><div style="width:${(1 - p) * 100}%;background:var(--flavio)"></div><span class="mid"></span></div>`;
+    const v = p == null ? `<span class="muted">sem resultado</span>`
+      : `<span style="color:var(--lula);font-weight:600">${fPct(p, 0)}</span> x <span style="color:var(--flavio);font-weight:600">${fPct(1 - p, 0)}</span><br><span class="muted">${fInt(l + f)} votos</span>`;
+    return `<div class="reg-row"><div class="nm">${g.regiao}<small>${sub}</small></div>${bar}<div class="v">${v}</div></div>`;
+  }).join("");
+}
+document.querySelectorAll("[data-reg]").forEach(b => b.addEventListener("click", () => {
+  modoReg = b.dataset.reg;
+  document.querySelectorAll("[data-reg]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderRegioes();
+}));
+
+// ---------------------------------------------------------------------------
+// Tabela
+// ---------------------------------------------------------------------------
+const sel = document.getElementById("f-regiao");
+[...new Set(dados.map(d => d.regiao))].sort((a, b) => a.localeCompare(b, "pt-BR"))
+  .forEach(r => sel.insertAdjacentHTML("beforeend", `<option>${r}</option>`));
+
+let ordem = { k: "tot1", dir: -1 };
+const valorOrdem = (d, k) => ({
+  pais: d.pais, tot1: d.tot1, p1: d.p1, tot2: d.tot2, p2: d.p2,
+  comp: d.compPct, delta: d.delta, status: d.tem2 ? 1 : 0,
+}[k]);
+
+function mini(p) {
+  if (p == null) return `<span class="mini"><i style="width:100%;background:var(--pendente);opacity:.35"></i></span>`;
+  return `<span class="mini"><i style="width:${p * 100}%;background:var(--lula)"></i><i style="width:${(1 - p) * 100}%;background:var(--flavio)"></i></span>`;
+}
+const corPct = p => p == null ? "" : `style="color:${p >= .5 ? "var(--lula)" : "var(--flavio)"};font-weight:600"`;
+
+function renderTabela() {
+  const q = document.getElementById("q").value.trim().toLocaleLowerCase("pt-BR")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const fr = sel.value, fs = document.getElementById("f-status").value;
+  const linhas = dados.filter(d => {
+    const nome = d.pais.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[̀-ͯ]/g, "");
+    return (!q || nome.includes(q)) && (!fr || d.regiao === fr) &&
+      (!fs || (fs === "ok" ? d.tem2 : !d.tem2));
+  }).sort((a, b) => {
+    const va = valorOrdem(a, ordem.k), vb = valorOrdem(b, ordem.k);
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;            // vazios sempre no fim
+    if (vb == null) return -1;
+    if (typeof va === "string") return va.localeCompare(vb, "pt-BR") * ordem.dir;
+    return (va - vb) * ordem.dir;
+  });
+
+  document.querySelector("#tabela tbody").innerHTML = linhas.length ? linhas.map(d => `
+    <tr>
+      <td><span class="pais">${d.pais}</span><span class="regiao">${d.regiao}</span></td>
+      <td>${fInt(d.tot1)}</td>
+      <td><span ${corPct(d.p1)}>${fPct(d.p1)}</span>${mini(d.p1)}</td>
+      <td>${d.tem2 ? fInt(d.tot2) : '<span class="muted">–</span>'}</td>
+      <td>${d.tem2 ? `<span ${corPct(d.p2)}>${fPct(d.p2)}</span>` : ""}${mini(d.p2)}</td>
+      <td>${d.compPct != null ? fPct(d.compPct) : '<span class="muted">–</span>'}</td>
+      <td>${d.delta != null ? `<span class="delta" style="color:${d.delta >= 0 ? "var(--lula)" : "var(--flavio)"}">${fPP(d.delta)}</span>` : '<span class="muted">–</span>'}</td>
+      <td>${d.tem2 ? '<span class="pill ok">Apurado</span>' : '<span class="pill wait">Aguardando</span>'}</td>
+    </tr>`).join("") : `<tr><td colspan="8" class="empty">Nenhum país encontrado.</td></tr>`;
+
+  // Rodapé: total listado, resíduo e total oficial
+  const L1 = soma(dados, "l1"), F1 = soma(dados, "f1");
+  const rL = OFICIAL_1T.lula - L1, rF = OFICIAL_1T.flavio - F1;
+  const L2 = soma(apurados, "l2"), F2 = soma(apurados, "f2");
+  const cA = apurados.filter(d => d.aptos && d.comp != null);
+  const compT = soma(cA, "aptos") ? soma(cA, "comp") / soma(cA, "aptos") : null;
+  const pT1 = share(OFICIAL_1T.lula, OFICIAL_1T.flavio), pT2 = share(L2, F2);
+  const resid = (rL > 0 || rF > 0) ? `
+    <tr class="resid">
+      <td>Demais países (não listados)</td>
+      <td>${fInt(rL + rF)}</td>
+      <td>${fPct(share(rL, rF))}</td>
+      <td>–</td><td></td><td>–</td><td>–</td><td></td>
+    </tr>` : "";
+  document.querySelector("#tabela tfoot").innerHTML = `${resid}
+    <tr>
+      <td>Total no exterior</td>
+      <td>${fInt(OFICIAL_1T.lula + OFICIAL_1T.flavio)}</td>
+      <td><span ${corPct(pT1)}>${fPct(pT1)}</span>${mini(pT1)}</td>
+      <td>${fInt(L2 + F2)}</td>
+      <td><span ${corPct(pT2)}>${fPct(pT2)}</span>${mini(pT2)}</td>
+      <td>${fPct(compT)}</td>
+      <td class="muted">parcial</td>
+      <td>${apurados.length}/${dados.length}</td>
+    </tr>`;
+
+  document.querySelectorAll("#tabela th[data-k]").forEach(th => {
+    th.setAttribute("aria-sort", th.dataset.k === ordem.k ? (ordem.dir > 0 ? "ascending" : "descending") : "none");
+  });
+}
+
+document.querySelectorAll("#tabela th[data-k]").forEach(th => {
+  const ativar = () => {
+    const k = th.dataset.k;
+    ordem = ordem.k === k ? { k, dir: -ordem.dir } : { k, dir: k === "pais" ? 1 : -1 };
+    renderTabela();
+  };
+  th.addEventListener("click", ativar);
+  th.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ativar(); } });
+});
+["q", "f-regiao", "f-status"].forEach(id => document.getElementById(id).addEventListener("input", renderTabela));
+
+// ---------------------------------------------------------------------------
+// Inicialização
+// ---------------------------------------------------------------------------
+function renderGraficos() { renderDumbbell(); renderMargens(); }
+renderResumo();
+renderRegioes();
+renderTabela();
+renderGraficos();
+
+let larguraAnterior = window.innerWidth, tmr;
+window.addEventListener("resize", () => {
+  clearTimeout(tmr);
+  tmr = setTimeout(() => {
+    if (window.innerWidth !== larguraAnterior) { larguraAnterior = window.innerWidth; renderGraficos(); }
+  }, 120);
+});
+</script>
+</body>
+</html>
