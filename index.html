@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voto no Exterior 2026</title>
-<meta name="description" content="Acompanhamento da apuração dos votos de brasileiros no exterior no 2º turno da eleição presidencial de 2026 (Lula x Flávio Bolsonaro), comparado com o 1º turno.">
+<title>Apuração 2º Turno 2026</title>
+<meta name="description" content="Acompanhamento da apuração do 2º turno da eleição presidencial de 2026 (Lula x Flávio Bolsonaro) por estado, região e país do exterior, comparado com o 1º turno.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -220,21 +220,223 @@
     .sobrenome { display: none; }
     .reg-row .reg-bar { grid-column: 1 / -1; grid-row: 2; }
   }
+
+  /* Abas */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: 0 0 18px; }
+  .tabs button {
+    background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    padding: 10px 14px; font: inherit; font-size: 14px; font-weight: 600; color: var(--text-2); cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--text); }
+  .tab-status { margin: -6px 0 16px; }
+  .status.erro .dot-live { background: #D32F2F; box-shadow: 0 0 0 3px rgba(211,47,47,.2); }
+  .status.ok .dot-live { background: #2E7D32; box-shadow: 0 0 0 3px rgba(46,125,50,.2); }
+
+  /* Mapa em grade */
+  .mapa-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  #br-mapa svg { max-width: 520px; margin: 0 auto; }
+  #br-mapa .tile-uf { font-weight: 700; font-size: 13px; pointer-events: none; }
+  #br-mapa .tile-v { font-size: 10.5px; pointer-events: none; }
+  #br-mapa rect.tile { cursor: default; }
+  #br-mapa rect.tile:hover { stroke: var(--text); stroke-width: 2; }
+  .grad { display: inline-block; width: 44px; height: 8px; border-radius: 2px; }
+
+  /* Configurações */
+  details.config { margin-top: 16px; }
+  details.config summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 12px 0; }
+  .config-grid label { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-2); }
+  .config-grid input[type="text"] {
+    font: inherit; font-size: 14px; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 9px; padding: 7px 10px; min-width: 0; width: 100%;
+  }
+  textarea {
+    width: 100%; min-height: 120px; font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 8px 10px;
+  }
+  .btn {
+    font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 9px; padding: 7px 12px; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--text-3); }
+  .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); }
+  .aviso { font-size: 13px; color: var(--text-2); background: var(--surface-2); border-radius: 10px; padding: 10px 12px; margin: 0 0 16px; }
+  .aviso strong { color: var(--text); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div>
-      <p class="eyebrow">Eleição presidencial 2026 · Brasileiros no exterior</p>
-      <h1>2º turno: Lula x Flávio Bolsonaro fora do Brasil</h1>
-      <p class="sub">Apuração parcial do 2º turno por país, comparada com o resultado final do 1º turno.</p>
-      <div class="status"><span class="dot-live" aria-hidden="true"></span><span id="status-text">Parcial</span></div>
+      <p class="eyebrow">Eleição presidencial 2026 · 2º turno</p>
+      <h1>Lula x Flávio Bolsonaro: a apuração no Brasil e no exterior</h1>
+      <p class="sub">Resultado do 2º turno por estado, região e país do exterior, comparado com o 1º turno.</p>
     </div>
     <button class="theme" id="theme-btn" type="button" aria-label="Alternar tema claro/escuro">
       <span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Tema</span>
     </button>
   </header>
+
+  <nav class="tabs" role="tablist" aria-label="Recorte">
+    <button type="button" role="tab" id="tb-brasil" aria-controls="tab-brasil" aria-selected="true">Brasil</button>
+    <button type="button" role="tab" id="tb-exterior" aria-controls="tab-exterior" aria-selected="false">Exterior por país</button>
+  </nav>
+
+  <div id="tab-brasil" role="tabpanel" aria-labelledby="tb-brasil">
+    <div class="tab-status">
+      <div class="status" id="br-status-box"><span class="dot-live" aria-hidden="true"></span><span id="br-status">Carregando dados do TSE…</span></div>
+    </div>
+    <div class="aviso" id="br-aviso" hidden></div>
+
+    <section class="card hero" aria-labelledby="br-placar-titulo">
+      <div>
+        <h2 id="br-placar-titulo">Placar do 2º turno no Brasil</h2>
+        <p class="desc">Percentual dos votos válidos, incluindo o exterior.</p>
+        <div class="score">
+          <div class="cand">
+            <div class="nome"><span class="sw" style="background:var(--lula)"></span>Lula <span class="partido">PT</span></div>
+            <div class="pct" id="br-lula-pct" style="color:var(--lula)">–</div>
+            <div class="votos" id="br-lula-v">–</div>
+          </div>
+          <div class="vs">x</div>
+          <div class="cand right">
+            <div class="nome">Flávio<span class="sobrenome"> Bolsonaro</span> <span class="partido">PL</span><span class="sw" style="background:var(--flavio)"></span></div>
+            <div class="pct" id="br-flavio-pct" style="color:var(--flavio)">–</div>
+            <div class="votos" id="br-flavio-v">–</div>
+          </div>
+        </div>
+        <div class="split" id="br-split" role="img" aria-label=""></div>
+        <div class="split-legend"><span>Lula</span><span>50%</span><span>Flávio</span></div>
+        <p class="hero-note" id="br-note"></p>
+      </div>
+    </section>
+
+    <section class="kpis" aria-label="Indicadores nacionais">
+      <div class="card kpi">
+        <div class="label">Seções totalizadas</div>
+        <div class="value" id="bk-secoes">–</div>
+        <div class="meter"><div id="bk-secoes-bar" style="width:0"></div></div>
+        <div class="meta" id="bk-secoes-meta"></div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Lula em relação ao 1º turno</div>
+        <div class="value" id="bk-swing">–</div>
+        <div class="meta" id="bk-swing-meta"></div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Comparecimento</div>
+        <div class="value" id="bk-comp">–</div>
+        <div class="meter"><div id="bk-comp-bar" style="width:0"></div></div>
+        <div class="meta" id="bk-comp-meta"></div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Estados com vantagem</div>
+        <div class="value" id="bk-ufs">–</div>
+        <div class="meta" id="bk-ufs-meta"></div>
+      </div>
+    </section>
+
+    <section class="grid2">
+      <div class="card">
+        <h2>Mapa por estado</h2>
+        <p class="desc" id="br-mapa-desc"></p>
+        <div class="toolbar">
+          <div class="seg" role="group" aria-label="O que o mapa mostra">
+            <button type="button" data-mapa="2t" aria-pressed="true">2º turno</button>
+            <button type="button" data-mapa="1t" aria-pressed="false">1º turno</button>
+            <button type="button" data-mapa="delta" aria-pressed="false">Variação</button>
+          </div>
+        </div>
+        <div class="legend" id="br-mapa-leg"></div>
+        <div class="chart" id="br-mapa"></div>
+      </div>
+      <div class="card">
+        <h2>Por região</h2>
+        <p class="desc">Lula x Flávio no 2º turno. Abaixo de cada barra, a fatia de Lula no 1º turno.</p>
+        <div class="regions" id="br-regioes"></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom:16px">
+      <h2>Lula no 1º e no 2º turno, por estado</h2>
+      <p class="desc">Fatia de Lula nos votos dados a Lula e Flávio. Com a apuração parcial, a comparação pode mudar conforme entram novas seções.</p>
+      <div class="legend">
+        <span><i class="lg-hollow"></i>1º turno</span>
+        <span><i class="lg-solid"></i>2º turno (cor do vencedor)</span>
+      </div>
+      <div class="chart" id="br-dumbbell"></div>
+    </section>
+
+    <section class="card">
+      <h2>Todos os estados</h2>
+      <p class="desc">Clique no cabeçalho para ordenar. "Δ Lula" é a variação, em pontos percentuais, da fatia de Lula entre os turnos.</p>
+      <div class="toolbar">
+        <input type="search" id="br-q" placeholder="Buscar estado…" aria-label="Buscar estado">
+        <select id="br-f-regiao" aria-label="Filtrar por região"><option value="">Todas as regiões</option></select>
+      </div>
+      <div class="table-wrap">
+        <table id="br-tabela">
+          <thead>
+            <tr>
+              <th class="grp"></th>
+              <th class="grp">1º turno</th>
+              <th class="grp" colspan="4">2º turno</th>
+              <th class="grp" colspan="2"></th>
+            </tr>
+            <tr>
+              <th data-k="nome" tabindex="0">Estado</th>
+              <th data-k="p1" tabindex="0">% Lula</th>
+              <th data-k="l2" tabindex="0">Lula</th>
+              <th data-k="f2" tabindex="0">Flávio</th>
+              <th data-k="p2" tabindex="0">% Lula</th>
+              <th data-k="pst" tabindex="0">Seções</th>
+              <th data-k="delta" tabindex="0">Δ Lula</th>
+              <th data-k="comp" tabindex="0">Compar.</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+
+      <details class="config" id="br-config">
+        <summary>Fonte dos dados e configurações</summary>
+        <p class="desc" style="margin-top:10px">Os resultados vêm da API pública de resultados do TSE (resultados.tse.jus.br), lida direto pelo seu navegador. Os códigos das eleições são detectados automaticamente; se a detecção falhar, preencha-os aqui.</p>
+        <div class="config-grid">
+          <label>Ciclo <input type="text" id="cf-ciclo" placeholder="ele2026"></label>
+          <label>Código do 1º turno <input type="text" id="cf-cd1" placeholder="automático" inputmode="numeric"></label>
+          <label>Código do 2º turno <input type="text" id="cf-cd2" placeholder="automático" inputmode="numeric"></label>
+        </div>
+        <div class="toolbar">
+          <button type="button" class="btn" id="cf-salvar">Salvar e recarregar</button>
+          <button type="button" class="btn" id="cf-agora">Atualizar agora</button>
+          <label class="chk"><input type="checkbox" id="cf-auto" checked> Atualizar a cada 2 minutos</label>
+        </div>
+        <p class="desc" style="margin-top:14px"><strong>Plano B: dados colados.</strong> Se o navegador não conseguir ler o TSE, cole um CSV com as colunas <code>uf;lula_1t;flavio_1t;lula_2t;flavio_2t;secoes_2t_pct</code> (use <code>BR</code> para o total nacional e <code>ZZ</code> para o exterior; campo vazio = sem dado).</p>
+        <textarea id="cf-csv" spellcheck="false" placeholder="uf;lula_1t;flavio_1t;lula_2t;flavio_2t;secoes_2t_pct&#10;SP;10500000;12800000;4200000;5100000;38,5"></textarea>
+        <div class="toolbar" style="margin-top:8px">
+          <button type="button" class="btn" id="cf-usar-csv">Usar dados colados</button>
+          <button type="button" class="btn" id="cf-voltar-tse">Voltar a usar o TSE</button>
+        </div>
+      </details>
+    </section>
+
+    <div class="notes">
+      <strong>Notas</strong>
+      <ul>
+        <li>Percentuais calculados apenas sobre os votos de Lula e Flávio, inclusive no 1º turno, para comparar os dois turnos na mesma base.</li>
+        <li>Enquanto a apuração é parcial, a variação entre turnos depende de quais seções já foram totalizadas e pode mudar bastante.</li>
+        <li>"Exterior" soma os votos de brasileiros fora do país; o detalhe por país está na aba "Exterior por país".</li>
+        <li>Comparecimento = eleitores que compareceram ÷ eleitorado, nas seções já totalizadas segundo o TSE.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="tab-exterior" role="tabpanel" aria-labelledby="tb-exterior" hidden>
+  <div class="tab-status">
+    <div class="status"><span class="dot-live" aria-hidden="true"></span><span id="status-text">Parcial</span></div>
+  </div>
+
 
   <section class="card hero" aria-labelledby="placar-titulo">
     <div>
@@ -374,6 +576,7 @@
       <li>Índia no 2º turno: 1 de 2 urnas apuradas.</li>
       <li>Percentuais calculados apenas sobre os votos de Lula e Flávio. Comparecimento = eleitores que compareceram ÷ aptos.</li>
     </ul>
+  </div>
   </div>
 </div>
 <div class="tooltip" id="tt" role="tooltip"></div>
@@ -824,7 +1027,10 @@ document.querySelectorAll("#tabela th[data-k]").forEach(th => {
 // ---------------------------------------------------------------------------
 // Inicialização
 // ---------------------------------------------------------------------------
-function renderGraficos() { renderDumbbell(); renderMargens(); }
+function renderGraficos() {
+  renderDumbbell(); renderMargens();
+  if (brPronto) { renderMapa(linhasUF()); renderDumbbellBR([...linhasUF(), linhaBR(EXTERIOR)]); }
+}
 renderResumo();
 renderRegioes();
 renderTabela();
@@ -837,6 +1043,486 @@ window.addEventListener("resize", () => {
     if (window.innerWidth !== larguraAnterior) { larguraAnterior = window.innerWidth; renderGraficos(); }
   }, 120);
 });
+
+// ===========================================================================
+// BRASIL — apuração por estado lida da API pública de resultados do TSE
+// ===========================================================================
+const UFS = [
+  { uf: "RR", nome: "Roraima", reg: "Norte", c: 2, r: 0 },
+  { uf: "AP", nome: "Amapá", reg: "Norte", c: 4, r: 0 },
+  { uf: "AM", nome: "Amazonas", reg: "Norte", c: 1, r: 1 },
+  { uf: "PA", nome: "Pará", reg: "Norte", c: 3, r: 1 },
+  { uf: "MA", nome: "Maranhão", reg: "Nordeste", c: 4, r: 1 },
+  { uf: "CE", nome: "Ceará", reg: "Nordeste", c: 5, r: 1 },
+  { uf: "RN", nome: "Rio Grande do Norte", reg: "Nordeste", c: 6, r: 1 },
+  { uf: "AC", nome: "Acre", reg: "Norte", c: 0, r: 2 },
+  { uf: "RO", nome: "Rondônia", reg: "Norte", c: 1, r: 2 },
+  { uf: "MT", nome: "Mato Grosso", reg: "Centro-Oeste", c: 2, r: 2 },
+  { uf: "TO", nome: "Tocantins", reg: "Norte", c: 3, r: 2 },
+  { uf: "PI", nome: "Piauí", reg: "Nordeste", c: 4, r: 2 },
+  { uf: "PE", nome: "Pernambuco", reg: "Nordeste", c: 5, r: 2 },
+  { uf: "PB", nome: "Paraíba", reg: "Nordeste", c: 6, r: 2 },
+  { uf: "MS", nome: "Mato Grosso do Sul", reg: "Centro-Oeste", c: 2, r: 3 },
+  { uf: "GO", nome: "Goiás", reg: "Centro-Oeste", c: 3, r: 3 },
+  { uf: "DF", nome: "Distrito Federal", reg: "Centro-Oeste", c: 4, r: 3 },
+  { uf: "BA", nome: "Bahia", reg: "Nordeste", c: 5, r: 3 },
+  { uf: "AL", nome: "Alagoas", reg: "Nordeste", c: 6, r: 3 },
+  { uf: "PR", nome: "Paraná", reg: "Sul", c: 2, r: 4 },
+  { uf: "SP", nome: "São Paulo", reg: "Sudeste", c: 3, r: 4 },
+  { uf: "MG", nome: "Minas Gerais", reg: "Sudeste", c: 4, r: 4 },
+  { uf: "ES", nome: "Espírito Santo", reg: "Sudeste", c: 5, r: 4 },
+  { uf: "SE", nome: "Sergipe", reg: "Nordeste", c: 6, r: 4 },
+  { uf: "SC", nome: "Santa Catarina", reg: "Sul", c: 2, r: 5 },
+  { uf: "RJ", nome: "Rio de Janeiro", reg: "Sudeste", c: 4, r: 5 },
+  { uf: "RS", nome: "Rio Grande do Sul", reg: "Sul", c: 2, r: 6 },
+];
+var brPronto = false; // var: lida por renderGraficos() antes desta parte rodar
+const EXTERIOR = { uf: "ZZ", nome: "Exterior", reg: "Exterior" };
+const REGIOES = ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul", "Exterior"];
+
+const TSE_BASE = "https://resultados.tse.jus.br/oficial";
+const CFG_KEY = "cfg-tse-2026";
+const cfg = { ciclo: "ele2026", cd1: "", cd2: "", auto: true };
+try { Object.assign(cfg, JSON.parse(localStorage.getItem(CFG_KEY) || "{}")); } catch (e) {}
+const salvaCfg = () => { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {} };
+
+// Estado: por abrangência ("BR", "ZZ", "SP"...) e turno.
+const br = { t1: {}, t2: {}, fonte: null, erro: null, hora: null, cd1: null, cd2: null };
+
+// Números do TSE vêm como texto ("60345999", "50,90").
+const tseNum = s => (s == null || s === "") ? null : +String(s).replace(/\./g, "").replace(",", ".");
+
+function lerAbrangencia(j) {
+  const cands = j.cand || [];
+  const acha = (num, re) => cands.find(c => String(c.n) === num) || cands.find(c => re.test(c.nm || ""));
+  const L = acha("13", /LULA/i), F = acha("22", /FL[AÁ]VIO/i);
+  const pst = tseNum(j.pst);
+  return {
+    l: L ? tseNum(L.vap) : null,
+    f: F ? tseNum(F.vap) : null,
+    pst: pst == null ? null : pst / 100,
+    e: tseNum(j.e), c: tseNum(j.c),
+    hora: [j.dg, j.hg].filter(Boolean).join(" ") || null,
+  };
+}
+
+const urlAbr = (cd, abr) =>
+  `${TSE_BASE}/${cfg.ciclo}/${cd}/dados-simplificados/${abr}/${abr}-c0001-e${String(cd).padStart(6, "0")}-r.json`;
+
+async function getJSON(url) {
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// Procura no arquivo de configuração do TSE as eleições gerais de 2026 (1º e 2º turno).
+async function detectarCodigos() {
+  const j = await getJSON(`${TSE_BASE}/comum/config/ele-c.json`);
+  const achados = [];
+  (function walk(o, ctx) {
+    if (Array.isArray(o)) { o.forEach(x => walk(x, ctx)); return; }
+    if (!o || typeof o !== "object") return;
+    const prim = Object.values(o).filter(v => typeof v !== "object").join(" ");
+    const c2 = ctx + " " + prim;
+    const t = String(o.t ?? "");
+    if (o.cd && (t === "1" || t === "2") && /2026/.test(c2) && /(geral|federal|presid)/i.test(o.nm || c2)) {
+      achados.push({ cd: String(o.cd), t });
+    }
+    Object.values(o).forEach(v => typeof v === "object" && walk(v, c2));
+  })(j, "");
+  const maior = t => achados.filter(a => a.t === t).sort((a, b) => +b.cd - +a.cd)[0]?.cd || null;
+  return { cd1: maior("1"), cd2: maior("2") };
+}
+
+async function carregarTurno(cd) {
+  const abrs = ["br", "zz", ...UFS.map(u => u.uf.toLowerCase())];
+  const res = await Promise.allSettled(abrs.map(a => getJSON(urlAbr(cd, a)).then(lerAbrangencia)));
+  const out = {}; let ok = 0;
+  res.forEach((r, i) => { if (r.status === "fulfilled") { out[abrs[i].toUpperCase()] = r.value; ok++; } });
+  if (!ok) throw new Error(res[0].reason?.message || "sem resposta");
+  return out;
+}
+
+let carregando = false;
+async function atualizarTSE({ forcar1t = false } = {}) {
+  if (carregando || br.fonte === "manual") return;
+  carregando = true;
+  setStatus("Consultando o TSE…", "");
+  try {
+    let cd1 = cfg.cd1 || br.cd1, cd2 = cfg.cd2 || br.cd2;
+    if (!cd1 || !cd2) {
+      const d = await detectarCodigos();
+      cd1 = cd1 || d.cd1; cd2 = cd2 || d.cd2;
+    }
+    if (!cd1 && !cd2) throw new Error("não encontrei os códigos das eleições de 2026");
+    br.cd1 = cd1; br.cd2 = cd2;
+    // 1º turno é final: busca uma vez (ou se ainda estava incompleto).
+    const precisa1t = cd1 && (forcar1t || !br.t1.BR || (br.t1.BR.pst ?? 0) < 1);
+    const [t1, t2] = await Promise.all([
+      precisa1t ? carregarTurno(cd1).catch(() => br.t1) : br.t1,
+      cd2 ? carregarTurno(cd2) : {},
+    ]);
+    br.t1 = t1; br.t2 = t2; br.fonte = "tse"; br.erro = null;
+    br.hora = t2.BR?.hora || t1.BR?.hora || null;
+  } catch (e) {
+    br.erro = e.message || String(e);
+  } finally {
+    carregando = false;
+    renderBrasil();
+  }
+}
+
+function setStatus(txt, tipo) {
+  document.getElementById("br-status").textContent = txt;
+  document.getElementById("br-status-box").className = "status " + (tipo || "");
+}
+
+// --- Plano B: CSV colado ----------------------------------------------------
+function usarCSV(texto) {
+  const linhas = d3.dsvFormat(";").parse(texto.trim());
+  const t1 = {}, t2 = {};
+  const pct = s => { const v = (s == null || String(s).trim() === "") ? null : +String(s).trim().replace(",", "."); return v == null ? null : (v > 1 ? v / 100 : v); };
+  linhas.forEach(r => {
+    const uf = (r.uf || "").trim().toUpperCase(); if (!uf) return;
+    t1[uf] = { l: tseNum(r.lula_1t), f: tseNum(r.flavio_1t), pst: 1 };
+    t2[uf] = { l: tseNum(r.lula_2t), f: tseNum(r.flavio_2t), pst: pct(r.secoes_2t_pct) };
+  });
+  // Sem linha BR: soma estados + exterior.
+  for (const t of [t1, t2]) if (!t.BR) {
+    const v = Object.values(t);
+    t.BR = { l: d3.sum(v, d => d.l ?? 0), f: d3.sum(v, d => d.f ?? 0), pst: null };
+  }
+  Object.assign(br, { t1, t2, fonte: "manual", erro: null, hora: null });
+  renderBrasil();
+}
+
+// --- Montagem das linhas -----------------------------------------------------
+function linhaBR(meta) {
+  const a = br.t1[meta.uf] || {}, b = br.t2[meta.uf] || {};
+  const tem2 = b.l != null && b.f != null && (b.l + b.f) > 0;
+  const p1 = share(a.l, a.f), p2 = tem2 ? share(b.l, b.f) : null;
+  return {
+    ...meta, l1: a.l, f1: a.f, l2: tem2 ? b.l : null, f2: tem2 ? b.f : null,
+    p1, p2, tem2, delta: (p1 != null && p2 != null) ? p2 - p1 : null,
+    pst: b.pst ?? null, comp: (b.e && b.c != null) ? b.c / b.e : null,
+    // Peso para a ordenação padrão: eleitorado, ou votos do 1º turno se faltar.
+    peso: b.e ?? ((a.l ?? 0) + (a.f ?? 0)),
+  };
+}
+const linhasUF = () => UFS.map(linhaBR);
+
+// --- Tooltip de estado -----------------------------------------------------
+function showTTUF(ev, d) {
+  const linhas = [
+    ["1º turno", d.l1 != null ? `${fInt(d.l1)} x ${fInt(d.f1)}` : "–"],
+    ["% Lula 1º t.", fPct(d.p1)],
+  ];
+  if (d.tem2) {
+    linhas.push(["2º turno", `${fInt(d.l2)} x ${fInt(d.f2)}`]);
+    linhas.push(["% Lula 2º t.", fPct(d.p2)]);
+    linhas.push(["Variação", fPP(d.delta)]);
+  } else linhas.push(["2º turno", "sem votos apurados"]);
+  if (d.pst != null) linhas.push(["Seções totalizadas", fPct(d.pst)]);
+  if (d.comp != null) linhas.push(["Comparecimento", fPct(d.comp)]);
+  tt.innerHTML = `<div class="t">${d.nome}${d.uf !== "ZZ" ? " (" + d.uf + ")" : ""}</div><div class="muted" style="margin-bottom:4px">${d.reg}</div>` +
+    linhas.map(([x, y]) => `<div class="r"><span>${x}</span><span>${y}</span></div>`).join("");
+  moveTT(ev); tt.style.opacity = 1;
+}
+
+// --- Render -----------------------------------------------------------------
+let modoMapa = "2t";
+function renderBrasil() {
+  const temDados = Object.keys(br.t2).length || Object.keys(br.t1).length;
+  const aviso = document.getElementById("br-aviso");
+
+  if (br.fonte === "manual") setStatus("Usando dados colados manualmente", "ok");
+  else if (br.erro && !temDados) setStatus("Não foi possível ler o TSE", "erro");
+  else if (br.erro) setStatus(`Falha na última consulta ao TSE · mostrando dados de ${br.hora || "antes"}`, "erro");
+  else if (temDados) {
+    const p = br.t2.BR?.pst;
+    setStatus(`TSE · 2º turno: ${p != null ? fPct(p, 2) + " das seções totalizadas" : "sem dados"}${br.hora ? " · totalização de " + br.hora : ""}`, p >= 1 ? "ok" : "");
+  }
+
+  if (br.erro && !temDados) {
+    aviso.hidden = false;
+    aviso.innerHTML = `<strong>O navegador não conseguiu ler a API do TSE</strong> (${br.erro}). ` +
+      `Isso costuma acontecer quando a página roda dentro de outro site que bloqueia conexões externas, ou quando o TSE recusa o acesso. ` +
+      `Tente abrir o arquivo <code>index.html</code> direto no navegador, informar os códigos das eleições ou colar os números em "Fonte dos dados e configurações", no fim da página.`;
+    document.getElementById("br-config").open = true;
+  } else aviso.hidden = true;
+
+  const ufs = linhasUF();
+  const ext = linhaBR(EXTERIOR);
+  const nac = br.t2.BR || {}, nac1 = br.t1.BR || {};
+
+  // Placar
+  const L2 = nac.l, F2 = nac.f, T2 = (L2 ?? 0) + (F2 ?? 0);
+  const pL = T2 ? L2 / T2 : null;
+  document.getElementById("br-lula-pct").textContent = fPct(pL);
+  document.getElementById("br-flavio-pct").textContent = pL == null ? "–" : fPct(1 - pL);
+  document.getElementById("br-lula-v").textContent = L2 != null ? fInt(L2) + " votos" : "–";
+  document.getElementById("br-flavio-v").textContent = F2 != null ? fInt(F2) + " votos" : "–";
+  const split = document.getElementById("br-split");
+  split.innerHTML = pL == null ? `<span class="mid"></span>` :
+    `<div style="width:${pL * 100}%;background:var(--lula)"></div><div style="width:${(1 - pL) * 100}%;background:var(--flavio)"></div><span class="mid"></span>`;
+  split.setAttribute("aria-label", pL == null ? "Sem dados" : `Lula ${fPct(pL)}, Flávio ${fPct(1 - pL)}`);
+  document.getElementById("br-note").innerHTML = pL == null ? "Aguardando os primeiros números do 2º turno." :
+    `<strong>${L2 >= F2 ? "Lula" : "Flávio"}</strong> está à frente por <strong>${fInt(Math.abs(L2 - F2))}</strong> votos` +
+    (nac.pst != null && nac.pst < 1 ? `, com ${fPct(nac.pst, 2)} das seções totalizadas. Resultado parcial.` : ".");
+
+  // KPIs
+  document.getElementById("bk-secoes").textContent = nac.pst != null ? fPct(nac.pst, 2) : "–";
+  document.getElementById("bk-secoes-bar").style.width = ((nac.pst ?? 0) * 100) + "%";
+  const ufsComSec = ufs.filter(d => d.pst != null);
+  document.getElementById("bk-secoes-meta").textContent = ufsComSec.length
+    ? `${ufs.filter(d => d.pst >= 1).length} de 27 estados com 100% totalizado` : "";
+
+  const p1n = share(nac1.l, nac1.f);
+  const sw = (pL != null && p1n != null) ? pL - p1n : null;
+  const elSw = document.getElementById("bk-swing");
+  elSw.textContent = fPP(sw);
+  elSw.style.color = sw == null ? "" : sw >= 0 ? "var(--lula)" : "var(--flavio)";
+  document.getElementById("bk-swing-meta").textContent = p1n != null
+    ? `Fatia de Lula entre os dois: ${fPct(p1n)} no 1º turno${pL != null ? " → " + fPct(pL) + " agora" : ""}` : "Sem dados do 1º turno";
+
+  const compN = (nac.e && nac.c != null) ? nac.c / nac.e : null;
+  document.getElementById("bk-comp").textContent = fPct(compN);
+  document.getElementById("bk-comp-bar").style.width = ((compN ?? 0) * 100) + "%";
+  document.getElementById("bk-comp-meta").textContent = compN != null ? `${fInt(nac.c)} de ${fInt(nac.e)} eleitores` : "";
+
+  const nL = ufs.filter(d => d.tem2 && d.l2 > d.f2).length, nF = ufs.filter(d => d.tem2 && d.f2 > d.l2).length;
+  document.getElementById("bk-ufs").innerHTML = (nL + nF)
+    ? `<span style="color:var(--lula)">${nL}</span> <span class="muted" style="font-size:15px;font-weight:600">x</span> <span style="color:var(--flavio)">${nF}</span>` : "–";
+  const n1L = ufs.filter(d => d.l1 > d.f1).length, n1F = ufs.filter(d => d.f1 > d.l1).length;
+  document.getElementById("bk-ufs-meta").textContent = (n1L + n1F) ? `Lula x Flávio · no 1º turno: ${n1L} x ${n1F}` : "Lula x Flávio";
+
+  renderMapa(ufs);
+  renderRegioesBR(ufs, ext);
+  renderDumbbellBR([...ufs, ext]);
+  renderTabelaBR([...ufs, ext]);
+}
+
+function corIntensa(p) {
+  // p = fatia de Lula; intensidade pela margem (0 a 25 p.p. de vantagem).
+  const t = Math.min(1, Math.abs(p - 0.5) / 0.25);
+  return d3.interpolateRgb(css("--surface-2"), p >= 0.5 ? COR.lula : COR.flavio)(0.22 + 0.78 * t);
+}
+function corDelta(dl) {
+  const t = Math.min(1, Math.abs(dl) / 0.08);
+  return d3.interpolateRgb(css("--surface-2"), dl >= 0 ? COR.lula : COR.flavio)(0.15 + 0.85 * t);
+}
+
+function renderMapa(ufs) {
+  const el = document.getElementById("br-mapa");
+  el.innerHTML = "";
+  const descs = {
+    "2t": "Cor do candidato à frente no 2º turno; quanto mais forte, maior a vantagem. Cinza: sem votos apurados.",
+    "1t": "Cor do candidato à frente no 1º turno (entre Lula e Flávio); quanto mais forte, maior a vantagem.",
+    "delta": "Quanto a fatia de Lula mudou do 1º para o 2º turno. Vermelho: Lula cresceu; azul: Lula caiu.",
+  };
+  document.getElementById("br-mapa-desc").textContent = descs[modoMapa];
+  const grad = (a, b) => `<i class="grad" style="background:linear-gradient(90deg, ${a}, ${b})"></i>`;
+  const s2 = css("--surface-2");
+  document.getElementById("br-mapa-leg").innerHTML = modoMapa === "delta"
+    ? `<span>${grad(s2, COR.lula)}Lula cresceu (até +8 p.p.)</span><span>${grad(s2, COR.flavio)}Lula caiu</span><span><i class="sw" style="background:var(--pendente)"></i>Sem dados</span>`
+    : `<span>${grad(s2, COR.lula)}Lula à frente</span><span>${grad(s2, COR.flavio)}Flávio à frente</span><span><i class="sw" style="background:var(--pendente)"></i>Sem resultado</span>`;
+
+  const W = Math.min(el.clientWidth || 480, 520);
+  const gap = 4, cols = 7, rows = 7;
+  const s = Math.floor((W - gap * (cols - 1)) / cols);
+  const H = rows * s + (rows - 1) * gap;
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
+    .attr("aria-label", "Mapa em grade dos estados do Brasil");
+
+  const valor = d => modoMapa === "2t" ? d.p2 : modoMapa === "1t" ? d.p1 : d.delta;
+  const fill = d => {
+    const v = valor(d);
+    if (v == null) return COR.pend;
+    return modoMapa === "delta" ? corDelta(v) : corIntensa(v);
+  };
+  const escuro = c => d3.hsl(c).l < 0.55 || c === COR.pend;
+  const g = svg.selectAll("g").data(ufs).join("g").attr("transform", d => `translate(${d.c * (s + gap)},${d.r * (s + gap)})`);
+  g.append("rect").attr("class", "tile").attr("width", s).attr("height", s).attr("rx", 7).attr("fill", fill)
+    .on("pointerenter", showTTUF).on("pointermove", moveTT).on("pointerleave", hideTT);
+  const txt = d => escuro(fill(d)) ? "#FFFFFF" : css("--text");
+  g.append("text").attr("class", "tile-uf").attr("x", s / 2).attr("y", s / 2 - (s > 46 ? 4 : 0)).attr("text-anchor", "middle")
+    .attr("dy", s > 46 ? "0" : "0.35em").style("fill", txt).text(d => d.uf);
+  if (s > 46) g.append("text").attr("class", "tile-v").attr("x", s / 2).attr("y", s / 2 + 12).attr("text-anchor", "middle")
+    .style("fill", txt).text(d => {
+      const v = valor(d); if (v == null) return "";
+      if (modoMapa === "delta") return (v >= 0 ? "+" : "−") + Math.abs(v * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+      return Math.round(Math.max(v, 1 - v) * 100) + "%";
+    });
+}
+
+function renderRegioesBR(ufs, ext) {
+  const grupos = REGIOES.map(reg => {
+    const v = reg === "Exterior" ? [ext] : ufs.filter(d => d.reg === reg);
+    return {
+      reg, n: v.length,
+      l1: d3.sum(v, d => d.l1 ?? 0), f1: d3.sum(v, d => d.f1 ?? 0),
+      l2: d3.sum(v, d => d.l2 ?? 0), f2: d3.sum(v, d => d.f2 ?? 0),
+    };
+  });
+  document.getElementById("br-regioes").innerHTML = grupos.map(g => {
+    const p = share(g.l2, g.f2), p1 = share(g.l1, g.f1);
+    const vazio = !(g.l2 + g.f2);
+    const bar = vazio
+      ? `<div class="reg-bar"><div style="width:100%;background:var(--pendente);opacity:.45"></div><span class="mid"></span></div>`
+      : `<div class="reg-bar"><div style="width:${p * 100}%;background:var(--lula)"></div><div style="width:${(1 - p) * 100}%;background:var(--flavio)"></div><span class="mid"></span></div>`;
+    const v = vazio ? `<span class="muted">sem resultado</span>`
+      : `<span style="color:var(--lula);font-weight:600">${fPct(p, 0)}</span> x <span style="color:var(--flavio);font-weight:600">${fPct(1 - p, 0)}</span><br><span class="muted">${fInt(g.l2 + g.f2)} votos</span>`;
+    const sub = g.reg === "Exterior" ? "brasileiros fora do país" : `${g.n} estados` + (p1 != null && g.l1 + g.f1 ? ` · 1º t.: ${fPct(p1, 0)} Lula` : "");
+    return `<div class="reg-row"><div class="nm">${g.reg}<small>${sub}</small></div>${bar}<div class="v">${v}</div></div>`;
+  }).join("");
+}
+
+function renderDumbbellBR(linhas) {
+  const el = document.getElementById("br-dumbbell");
+  el.innerHTML = "";
+  const rows = linhas.filter(d => d.p1 != null || d.p2 != null)
+    .sort((a, b) => d3.descending(a.p2 ?? a.p1, b.p2 ?? b.p1));
+  if (!rows.length) { el.innerHTML = `<div class="empty">Sem dados ainda.</div>`; return; }
+
+  const W = el.clientWidth || 700;
+  const estreito = W < 520;
+  const m = { top: 22, right: 52, bottom: 8, left: estreito ? 40 : 160 };
+  const rowH = 24;
+  const H = m.top + m.bottom + rows.length * rowH;
+  const vals = rows.flatMap(d => [d.p1, d.p2]).filter(v => v != null).concat([0.5]);
+  const ext = d3.extent(vals);
+  const x = d3.scaleLinear().domain([Math.max(0, ext[0] - 0.03), Math.min(1, ext[1] + 0.03)]).nice().range([m.left, W - m.right]);
+  const y = d3.scaleBand().domain(rows.map(d => d.uf)).range([m.top, H - m.bottom]).padding(0.2);
+
+  const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
+    .attr("aria-label", "Percentual de Lula no 1º e 2º turno por estado");
+  svg.append("g").attr("class", "axis").attr("transform", `translate(0,${m.top - 6})`)
+    .call(d3.axisTop(x).ticks(estreito ? 4 : 8).tickFormat(d => Math.round(d * 100) + "%").tickSize(-(H - m.top - m.bottom + 6)));
+  svg.append("line").attr("class", "zero").attr("x1", x(0.5)).attr("x2", x(0.5))
+    .attr("y1", m.top - 6).attr("y2", H - m.bottom).attr("stroke-dasharray", "3 3");
+
+  const g = svg.append("g").selectAll("g").data(rows).join("g")
+    .attr("transform", d => `translate(0,${y(d.uf) + y.bandwidth() / 2})`);
+  g.append("rect").attr("class", "row-hit").attr("x", 0).attr("width", W).attr("y", -rowH / 2).attr("height", rowH).attr("rx", 6)
+    .on("pointerenter", showTTUF).on("pointermove", moveTT).on("pointerleave", hideTT);
+  g.append("text").attr("class", "lbl").attr("x", m.left - 10).attr("dy", "0.35em").attr("text-anchor", "end")
+    .text(d => estreito ? d.uf.replace("ZZ", "Ext.") : d.nome).style("pointer-events", "none");
+  g.filter(d => d.p1 != null && d.p2 != null).append("line").attr("x1", d => x(d.p1)).attr("x2", d => x(d.p2))
+    .attr("stroke", d => corVencedor(d.l2, d.f2)).attr("stroke-width", 3).attr("stroke-opacity", .45).style("pointer-events", "none");
+  g.filter(d => d.p1 != null).append("circle").attr("cx", d => x(d.p1)).attr("r", 4.5)
+    .attr("fill", css("--surface")).attr("stroke", css("--text-3")).attr("stroke-width", 2).style("pointer-events", "none");
+  g.filter(d => d.p2 != null).append("circle").attr("cx", d => x(d.p2)).attr("r", 5.5)
+    .attr("fill", d => corVencedor(d.l2, d.f2)).attr("stroke", css("--surface")).attr("stroke-width", 1.5).style("pointer-events", "none");
+  g.filter(d => d.delta != null).append("text").attr("x", W - m.right + 8).attr("dy", "0.35em")
+    .attr("fill", d => d.delta >= 0 ? COR.lula : COR.flavio).style("font-weight", 600).style("pointer-events", "none")
+    .text(d => (d.delta >= 0 ? "+" : "−") + Math.abs(d.delta * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 }));
+}
+
+const selBR = document.getElementById("br-f-regiao");
+REGIOES.forEach(r => selBR.insertAdjacentHTML("beforeend", `<option>${r}</option>`));
+let ordemBR = { k: "peso", dir: -1 };
+const semAcento = s => s.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+function renderTabelaBR(linhas) {
+  const q = semAcento(document.getElementById("br-q").value.trim()), fr = selBR.value;
+  const rows = linhas.filter(d => (!q || semAcento(d.nome).includes(q) || semAcento(d.uf).includes(q)) && (!fr || d.reg === fr))
+    .sort((a, b) => {
+      const va = a[ordemBR.k], vb = b[ordemBR.k];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "string") return va.localeCompare(vb, "pt-BR") * ordemBR.dir;
+      return (va - vb) * ordemBR.dir;
+    });
+  const tdv = v => v == null ? '<span class="muted">–</span>' : v;
+  document.querySelector("#br-tabela tbody").innerHTML = rows.length ? rows.map(d => `
+    <tr>
+      <td><span class="pais">${d.nome}</span><span class="regiao">${d.uf !== "ZZ" ? d.uf + " · " : ""}${d.reg}</span></td>
+      <td>${d.p1 != null ? `<span ${corPct(d.p1)}>${fPct(d.p1)}</span>` : tdv(null)}${mini(d.p1)}</td>
+      <td>${tdv(d.tem2 ? fInt(d.l2) : null)}</td>
+      <td>${tdv(d.tem2 ? fInt(d.f2) : null)}</td>
+      <td>${d.tem2 ? `<span ${corPct(d.p2)}>${fPct(d.p2)}</span>` : ""}${mini(d.p2)}</td>
+      <td>${tdv(d.pst != null ? fPct(d.pst) : null)}</td>
+      <td>${d.delta != null ? `<span class="delta" style="color:${d.delta >= 0 ? "var(--lula)" : "var(--flavio)"}">${fPP(d.delta)}</span>` : tdv(null)}</td>
+      <td>${tdv(d.comp != null ? fPct(d.comp) : null)}</td>
+    </tr>`).join("") : `<tr><td colspan="8" class="empty">Nenhum estado encontrado.</td></tr>`;
+
+  const n1 = br.t1.BR || {}, n2 = br.t2.BR || {};
+  const p1 = share(n1.l, n1.f), p2 = share(n2.l, n2.f);
+  const comp = (n2.e && n2.c != null) ? n2.c / n2.e : null;
+  document.querySelector("#br-tabela tfoot").innerHTML = (n1.l != null || n2.l != null) ? `
+    <tr>
+      <td>Brasil (total)</td>
+      <td>${p1 != null ? `<span ${corPct(p1)}>${fPct(p1)}</span>` : "–"}${mini(p1)}</td>
+      <td>${fInt(n2.l)}</td>
+      <td>${fInt(n2.f)}</td>
+      <td>${p2 != null ? `<span ${corPct(p2)}>${fPct(p2)}</span>` : "–"}${mini(p2)}</td>
+      <td>${n2.pst != null ? fPct(n2.pst) : "–"}</td>
+      <td>${p1 != null && p2 != null ? fPP(p2 - p1) : "–"}</td>
+      <td>${fPct(comp)}</td>
+    </tr>` : "";
+  document.querySelectorAll("#br-tabela th[data-k]").forEach(th =>
+    th.setAttribute("aria-sort", th.dataset.k === ordemBR.k ? (ordemBR.dir > 0 ? "ascending" : "descending") : "none"));
+}
+
+document.querySelectorAll("#br-tabela th[data-k]").forEach(th => {
+  const ativar = () => {
+    const k = th.dataset.k;
+    ordemBR = ordemBR.k === k ? { k, dir: -ordemBR.dir } : { k, dir: k === "nome" ? 1 : -1 };
+    renderTabelaBR([...linhasUF(), linhaBR(EXTERIOR)]);
+  };
+  th.addEventListener("click", ativar);
+  th.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ativar(); } });
+});
+["br-q", "br-f-regiao"].forEach(id => document.getElementById(id).addEventListener("input",
+  () => renderTabelaBR([...linhasUF(), linhaBR(EXTERIOR)])));
+document.querySelectorAll("[data-mapa]").forEach(b => b.addEventListener("click", () => {
+  modoMapa = b.dataset.mapa;
+  document.querySelectorAll("[data-mapa]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderMapa(linhasUF());
+}));
+
+// Configurações
+const $cf = id => document.getElementById(id);
+$cf("cf-ciclo").value = cfg.ciclo; $cf("cf-cd1").value = cfg.cd1; $cf("cf-cd2").value = cfg.cd2; $cf("cf-auto").checked = cfg.auto;
+$cf("cf-salvar").addEventListener("click", () => {
+  cfg.ciclo = $cf("cf-ciclo").value.trim() || "ele2026";
+  cfg.cd1 = $cf("cf-cd1").value.trim(); cfg.cd2 = $cf("cf-cd2").value.trim();
+  salvaCfg();
+  Object.assign(br, { t1: {}, t2: {}, fonte: null, erro: null, cd1: null, cd2: null });
+  atualizarTSE({ forcar1t: true });
+});
+$cf("cf-agora").addEventListener("click", () => atualizarTSE());
+$cf("cf-auto").addEventListener("change", e => { cfg.auto = e.target.checked; salvaCfg(); });
+$cf("cf-usar-csv").addEventListener("click", () => {
+  try { usarCSV($cf("cf-csv").value); } catch (e) { alert("Não consegui ler o CSV: " + e.message); }
+});
+$cf("cf-voltar-tse").addEventListener("click", () => {
+  Object.assign(br, { t1: {}, t2: {}, fonte: null, erro: null });
+  atualizarTSE({ forcar1t: true });
+});
+
+// Abas
+const abas = { brasil: document.getElementById("tab-brasil"), exterior: document.getElementById("tab-exterior") };
+function mostrarAba(nome) {
+  Object.entries(abas).forEach(([k, el]) => { el.hidden = k !== nome; });
+  document.getElementById("tb-brasil").setAttribute("aria-selected", nome === "brasil");
+  document.getElementById("tb-exterior").setAttribute("aria-selected", nome === "exterior");
+  try { localStorage.setItem("aba-2026", nome); } catch (e) {}
+  renderGraficos();
+}
+document.getElementById("tb-brasil").addEventListener("click", () => mostrarAba("brasil"));
+document.getElementById("tb-exterior").addEventListener("click", () => mostrarAba("exterior"));
+let abaInicial = "brasil";
+try { abaInicial = localStorage.getItem("aba-2026") === "exterior" ? "exterior" : "brasil"; } catch (e) {}
+brPronto = true;
+mostrarAba(abaInicial);
+
+renderBrasil();
+atualizarTSE();
+setInterval(() => {
+  if (cfg.auto && !document.hidden && br.fonte !== "manual" && !((br.t2.BR?.pst ?? 0) >= 1)) atualizarTSE();
+}, 120000);
 </script>
 </body>
 </html>
